@@ -6,16 +6,85 @@ generator client {
     binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
+generator zod {
+    provider                  = "zod-prisma-types"
+    createRelationValuesTypes = true
+}
+
 datasource db {
     provider = "mongodb"
     url      = env("DATABASE_URL")
 }
 
-model Post {
+model Tournament {
+    id              String          @id @default(auto()) @map("_id") @db.ObjectId
+    name            String
+    code            String          @unique
+    password        String
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
+    tournamentSize  TournamentSize  @default(BIG)
+    teams           Team[]
+    tournamentState TournamentState @default(LOBBY)
+    matches         Match[]
+
+    @@index([name, code])
+}
+
+model Team {
+    id            String     @id @default(auto()) @map("_id") @db.ObjectId
+    name          String
+    createdAt     DateTime   @default(now())
+    updatedAt     DateTime   @updatedAt
+    players       Player[]
+    tournament    Tournament @relation(fields: [tournamentId], references: [id])
+    tournamentId  String     @db.ObjectId
+    team1Matches  Match[]    @relation(name: "Team1")
+    team2Matches  Match[]    @relation(name: "Team2")
+    winnerMatches Match[]    @relation(name: "Winner")
+    looserMatches Match[]    @relation(name: "Looser")
+
+    @@index([name])
+}
+
+model Player {
     id        String   @id @default(auto()) @map("_id") @db.ObjectId
     name      String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    team      Team     @relation(fields: [teamId], references: [id])
+    teamId    String   @db.ObjectId
 
     @@index([name])
+}
+
+model Match {
+    id           String     @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+    team1        Team       @relation(name: "Team1", fields: [team1Id], references: [id])
+    team1Id      String     @db.ObjectId
+    team2        Team       @relation(name: "Team2", fields: [team2Id], references: [id])
+    team2Id      String     @db.ObjectId
+    winner       Team?      @relation(name: "Winner", fields: [winnerId], references: [id])
+    winnerId     String?    @db.ObjectId
+    looser       Team?      @relation(name: "Looser", fields: [looserId], references: [id])
+    looserId     String?    @db.ObjectId
+    tournament   Tournament @relation(fields: [tournamentId], references: [id])
+    tournamentId String     @db.ObjectId
+    team1Score   Int
+    team2Score   Int
+}
+
+enum TournamentSize {
+    SMALL // 8 Spieler
+    MEDIUM // 16 Spieler
+    LARGE // 32 Spieler
+    BIG // default (64 Spieler)
+}
+
+enum TournamentState {
+    LOBBY
+    RUNNING
+    FINISHED
 }
