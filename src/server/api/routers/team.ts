@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { v4 as uuidv4 } from "uuid";
 
 export const teamRouter = createTRPCRouter({
   // Creates a new Team
@@ -12,9 +13,13 @@ export const teamRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      const code = uuidv4() as string;
+
       return ctx.db.team.create({
         data: {
           name: input.name,
+          code: code,
           tournament: { connect: { id: input.tournamentId } },
         },
       });

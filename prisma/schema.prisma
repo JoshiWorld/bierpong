@@ -34,6 +34,7 @@ model Tournament {
 model Team {
     id            String     @id @default(auto()) @map("_id") @db.ObjectId
     name          String
+    code          String     @unique
     createdAt     DateTime   @default(now())
     updatedAt     DateTime   @updatedAt
     players       Player[]
@@ -44,7 +45,7 @@ model Team {
     winnerMatches Match[]    @relation(name: "Winner")
     looserMatches Match[]    @relation(name: "Looser")
 
-    @@index([name])
+    @@index([name, code])
 }
 
 model Player {
