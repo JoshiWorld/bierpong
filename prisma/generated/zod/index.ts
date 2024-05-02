@@ -427,10 +427,26 @@ export const TeamOrderByWithRelationInputSchema: z.ZodType<Prisma.TeamOrderByWit
 export const TeamWhereUniqueInputSchema: z.ZodType<Prisma.TeamWhereUniqueInput> = z.union([
   z.object({
     id: z.string(),
+    name: z.string(),
     code: z.string()
   }),
   z.object({
     id: z.string(),
+    name: z.string(),
+  }),
+  z.object({
+    id: z.string(),
+    code: z.string(),
+  }),
+  z.object({
+    id: z.string(),
+  }),
+  z.object({
+    name: z.string(),
+    code: z.string(),
+  }),
+  z.object({
+    name: z.string(),
   }),
   z.object({
     code: z.string(),
@@ -438,11 +454,11 @@ export const TeamWhereUniqueInputSchema: z.ZodType<Prisma.TeamWhereUniqueInput> 
 ])
 .and(z.object({
   id: z.string().optional(),
+  name: z.string().optional(),
   code: z.string().optional(),
   AND: z.union([ z.lazy(() => TeamWhereInputSchema),z.lazy(() => TeamWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => TeamWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => TeamWhereInputSchema),z.lazy(() => TeamWhereInputSchema).array() ]).optional(),
-  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   tournamentId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
@@ -499,15 +515,24 @@ export const PlayerOrderByWithRelationInputSchema: z.ZodType<Prisma.PlayerOrderB
   team: z.lazy(() => TeamOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const PlayerWhereUniqueInputSchema: z.ZodType<Prisma.PlayerWhereUniqueInput> = z.object({
-  id: z.string()
-})
+export const PlayerWhereUniqueInputSchema: z.ZodType<Prisma.PlayerWhereUniqueInput> = z.union([
+  z.object({
+    id: z.string(),
+    name: z.string()
+  }),
+  z.object({
+    id: z.string(),
+  }),
+  z.object({
+    name: z.string(),
+  }),
+])
 .and(z.object({
   id: z.string().optional(),
+  name: z.string().optional(),
   AND: z.union([ z.lazy(() => PlayerWhereInputSchema),z.lazy(() => PlayerWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => PlayerWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => PlayerWhereInputSchema),z.lazy(() => PlayerWhereInputSchema).array() ]).optional(),
-  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   teamId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),

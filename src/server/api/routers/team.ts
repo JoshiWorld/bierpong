@@ -14,7 +14,7 @@ export const teamRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const code = uuidv4() as string;
+      const code = uuidv4();
 
       return ctx.db.team.create({
         data: {
@@ -22,6 +22,24 @@ export const teamRouter = createTRPCRouter({
           code: code,
           tournament: { connect: { id: input.tournamentId } },
         },
+      });
+    }),
+
+    // Get a Team by Name
+  getByName: publicProcedure
+    .input(z.object({ name: z.string().min(2) }))
+    .query(({ ctx, input }) => {
+      return ctx.db.team.findFirst({
+        where: { name: input.name },
+      });
+    }),
+
+    // Get a Team by Name
+  getByCode: publicProcedure
+    .input(z.object({ code: z.string().min(2) }))
+    .query(({ ctx, input }) => {
+      return ctx.db.team.findFirst({
+        where: { code: input.code },
       });
     }),
 

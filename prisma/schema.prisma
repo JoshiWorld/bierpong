@@ -33,7 +33,7 @@ model Tournament {
 
 model Team {
     id            String     @id @default(auto()) @map("_id") @db.ObjectId
-    name          String
+    name          String     @unique
     code          String     @unique
     createdAt     DateTime   @default(now())
     updatedAt     DateTime   @updatedAt
@@ -50,13 +50,11 @@ model Team {
 
 model Player {
     id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    name      String
+    name      String   @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     team      Team     @relation(fields: [teamId], references: [id])
     teamId    String   @db.ObjectId
-
-    @@index([name])
 }
 
 model Match {
