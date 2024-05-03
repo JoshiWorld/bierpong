@@ -5,33 +5,45 @@ import { type TournamentSize, type TournamentState } from "@prisma/client";
 import { useEffect, useState } from "react";
 
 type TournamentData = {
-    id: string;
-    name: string;
-    code: string;
-    tournamentSize: TournamentSize;
-    tournamentState: TournamentState;
-    teams: TeamData[];
-    matches: MatchData[];
-}
+  id: string;
+  name: string;
+  code: string;
+  tournamentSize: TournamentSize;
+  tournamentState: TournamentState;
+  teams: TeamData[];
+  matches: MatchData[];
+  groups: GroupData[];
+};
 
 type TeamData = {
-    id: string;
-    name: string;
-    players: PlayerData[];
-}
+  id: string;
+  name: string;
+  players: PlayerData[];
+};
 
 type PlayerData = {
-    id: string;
-    name: string;
-}
+  id: string;
+  name: string;
+};
+
+type GroupData = {
+  id: string;
+  teams: TeamData[];
+};
 
 type MatchData = {
-    id: string;
-}
+  id: string;
+  team1: TeamData;
+  team2: TeamData;
+  winner: TeamData;
+  looser: TeamData;
+  team1Score: number;
+  team2Score: number;
+};
 
 export default function TournamentGroupPage() {
-    const [data, setData] = useState<TournamentData | null>(null);
-    const [jwt, setJwt] = useState(null);
+  const [data, setData] = useState<TournamentData | null>(null);
+  const [jwt, setJwt] = useState(null);
 
   useEffect(() => {
     fetch("/api/verify")
@@ -68,7 +80,7 @@ export default function TournamentGroupPage() {
     }
   }, [jwt]);
 
-  if(!data) return <div>Loading...</div>;
+  if (!data) return <div>Loading...</div>;
 
   return (
     <div>
@@ -85,4 +97,4 @@ export default function TournamentGroupPage() {
       ))}
     </div>
   );
-};
+}

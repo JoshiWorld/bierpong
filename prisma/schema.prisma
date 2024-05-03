@@ -27,6 +27,7 @@ model Tournament {
     teams           Team[]
     tournamentState TournamentState @default(LOBBY)
     matches         Match[]
+    groups          Group[]
 
     @@index([name, code])
 }
@@ -44,17 +45,28 @@ model Team {
     team2Matches  Match[]    @relation(name: "Team2")
     winnerMatches Match[]    @relation(name: "Winner")
     looserMatches Match[]    @relation(name: "Looser")
+    group         Group?     @relation(fields: [groupId], references: [id])
+    groupId       String?    @db.ObjectId
 
     @@index([name, code])
 }
 
 model Player {
     id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    name      String   
+    name      String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     team      Team     @relation(fields: [teamId], references: [id])
     teamId    String   @db.ObjectId
+}
+
+model Group {
+    id           String     @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+    tournament   Tournament @relation(fields: [tournamentId], references: [id])
+    tournamentId String     @db.ObjectId
+    teams        Team[]     
 }
 
 model Match {
