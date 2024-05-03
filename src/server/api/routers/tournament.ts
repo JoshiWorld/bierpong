@@ -34,6 +34,23 @@ export const tournamentRouter = createTRPCRouter({
       });
     }),
 
+  // Get a Tournament by ID
+  getFull: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(({ ctx, input }) => {
+      return ctx.db.tournament.findFirst({
+        where: { id: input.id },
+        include: {
+          teams: {
+            include: {
+              players: true,
+            },
+          },
+          matches: true
+        },
+      });
+    }),
+
   // Get all Teams of a Tournament
   getTeams: publicProcedure
     .input(z.object({ id: z.string().min(1) }))
@@ -43,18 +60,22 @@ export const tournamentRouter = createTRPCRouter({
       });
     }),
 
-   // Get all Players of a Tournament
+  // Get all Players of a Tournament
   getPlayers: publicProcedure
     .input(z.object({ id: z.string().min(1) }))
     .query(({ ctx, input }) => {
-      return ctx.db.team.findMany({
-        where: { tournament: { id: input.id } },
-      }).then(teams => {
-        return ctx.db.player.findMany({ where: { team: { id: { in: teams.map(team => team.id) } } } });
-      });
+      return ctx.db.team
+        .findMany({
+          where: { tournament: { id: input.id } },
+        })
+        .then((teams) => {
+          return ctx.db.player.findMany({
+            where: { team: { id: { in: teams.map((team) => team.id) } } },
+          });
+        });
     }),
 
-    // Get a Tournament by Code
+  // Get a Tournament by Code
   getByCode: publicProcedure
     .input(z.object({ code: z.string().min(4) }))
     .query(({ ctx, input }) => {

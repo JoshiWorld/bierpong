@@ -515,24 +515,15 @@ export const PlayerOrderByWithRelationInputSchema: z.ZodType<Prisma.PlayerOrderB
   team: z.lazy(() => TeamOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const PlayerWhereUniqueInputSchema: z.ZodType<Prisma.PlayerWhereUniqueInput> = z.union([
-  z.object({
-    id: z.string(),
-    name: z.string()
-  }),
-  z.object({
-    id: z.string(),
-  }),
-  z.object({
-    name: z.string(),
-  }),
-])
+export const PlayerWhereUniqueInputSchema: z.ZodType<Prisma.PlayerWhereUniqueInput> = z.object({
+  id: z.string()
+})
 .and(z.object({
   id: z.string().optional(),
-  name: z.string().optional(),
   AND: z.union([ z.lazy(() => PlayerWhereInputSchema),z.lazy(() => PlayerWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => PlayerWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => PlayerWhereInputSchema),z.lazy(() => PlayerWhereInputSchema).array() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   teamId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
