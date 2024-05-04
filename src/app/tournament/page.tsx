@@ -3,6 +3,15 @@
 import { TournamentState, type TournamentSize } from "@prisma/client";
 // components/SubscriptionComponent.tsx
 import { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 type TournamentData = {
   id: string;
@@ -19,6 +28,10 @@ type TeamData = {
   id: string;
   name: string;
   players: PlayerData[];
+  team1Matches: MatchData[];
+  team2Matches: MatchData[];
+  winnerMatches: MatchData[];
+  looserMatches: MatchData[];
 };
 
 type PlayerData = {
@@ -84,21 +97,7 @@ export default function TournamentPage() {
 
   if(data.tournamentState === TournamentState.LOBBY) return <TournamentLobbyView data={data} />;
 
-  return (
-    <div>
-      <h1>Subscription Component</h1>
-      {data.teams.map((team) => (
-        <div key={team.id}>
-          <h2>{team.name}</h2>
-          <ul>
-            {team.players.map((player) => (
-              <li key={player.id}>{player.name}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
+  return <TournamentIngameView data={data} />;
 }
 
 function TournamentLobbyView({ data }: { data: TournamentData }) {
@@ -127,6 +126,46 @@ function TournamentLobbyView({ data }: { data: TournamentData }) {
               </p>
             </div>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TournamentIngameView({ data }: { data: TournamentData }) {
+  return (
+    <div className="container justify-center">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {data.groups.map((group, index) => (
+          <Table key={group.id}>
+            <TableCaption>Gruppe {index}</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Team</TableHead>
+                <TableHead>S:N</TableHead>
+                <TableHead>Becher</TableHead>
+                {/* <TableHead className="text-right">Amount</TableHead> */}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {group.teams.map((team) => {
+                const firstScore = team.team1Matches.reduce((sum, match) => sum + match.team1Score, 0) + team.team2Matches.reduce((sum, match) => sum + match.team2Score, 0);
+                const secondScore = team.team1Matches.reduce((sum, match) => sum + match.team2Score, 0) + team.team2Matches.reduce((sum, match) => sum + match.team1Score, 0);
+
+                return (
+                  <TableRow key={team.id}>
+                    <TableCell className="font-medium">{team.name}</TableCell>
+                    <TableCell>
+                      {team.winnerMatches.length}:{team.looserMatches.length}
+                    </TableCell>
+                    <TableCell>
+                      {firstScore}:{secondScore}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         ))}
       </div>
     </div>
