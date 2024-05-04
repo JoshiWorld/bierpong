@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TournamentSizeSchema } from "prisma/generated/zod";
+import { TournamentState } from "@prisma/client";
 
 export const tournamentRouter = createTRPCRouter({
   // Creates a new Tournament
@@ -46,7 +47,7 @@ export const tournamentRouter = createTRPCRouter({
               players: true,
             },
           },
-          matches: true
+          matches: true,
         },
       });
     }),
@@ -57,6 +58,18 @@ export const tournamentRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       return ctx.db.team.findMany({
         where: { tournament: { id: input.id } },
+      });
+    }),
+
+  // Get all Groups of a Tournament
+  getGroups: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(({ ctx, input }) => {
+      return ctx.db.group.findMany({
+        where: { tournament: { id: input.id } },
+        include: {
+          teams: true,
+        }
       });
     }),
 
@@ -108,6 +121,24 @@ export const tournamentRouter = createTRPCRouter({
         where: { id },
         data: {
           name,
+        },
+      });
+    }),
+
+  start: publicProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        password: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, password } = input;
+
+      return ctx.db.tournament.update({
+        where: { id, password },
+        data: {
+          tournamentState: TournamentState.RUNNING,
         },
       });
     }),

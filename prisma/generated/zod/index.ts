@@ -18,7 +18,7 @@ export const PlayerScalarFieldEnumSchema = z.enum(['id','name','createdAt','upda
 
 export const GroupScalarFieldEnumSchema = z.enum(['id','createdAt','updatedAt','tournamentId']);
 
-export const MatchScalarFieldEnumSchema = z.enum(['id','createdAt','updatedAt','team1Id','team2Id','winnerId','looserId','tournamentId','team1Score','team2Score']);
+export const MatchScalarFieldEnumSchema = z.enum(['id','createdAt','updatedAt','team1Id','team2Id','winnerId','looserId','tournamentId','groupId','team1Score','team2Score']);
 
 export const SortOrderSchema = z.enum(['asc','desc']);
 
@@ -157,6 +157,7 @@ export type Group = z.infer<typeof GroupSchema>
 export type GroupRelations = {
   tournament: Tournament;
   teams: Team[];
+  matches: Match[];
 };
 
 export type GroupWithRelations = z.infer<typeof GroupSchema> & GroupRelations
@@ -164,6 +165,7 @@ export type GroupWithRelations = z.infer<typeof GroupSchema> & GroupRelations
 export const GroupWithRelationsSchema: z.ZodType<GroupWithRelations> = GroupSchema.merge(z.object({
   tournament: z.lazy(() => TournamentSchema),
   teams: z.lazy(() => TeamSchema).array(),
+  matches: z.lazy(() => MatchSchema).array(),
 }))
 
 /////////////////////////////////////////
@@ -179,8 +181,9 @@ export const MatchSchema = z.object({
   winnerId: z.string().nullable(),
   looserId: z.string().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int(),
+  groupId: z.string().nullable(),
+  team1Score: z.number().int().nullable(),
+  team2Score: z.number().int().nullable(),
 })
 
 export type Match = z.infer<typeof MatchSchema>
@@ -194,6 +197,7 @@ export type MatchRelations = {
   winner?: Team | null;
   looser?: Team | null;
   tournament: Tournament;
+  group?: Group | null;
 };
 
 export type MatchWithRelations = z.infer<typeof MatchSchema> & MatchRelations
@@ -204,6 +208,7 @@ export const MatchWithRelationsSchema: z.ZodType<MatchWithRelations> = MatchSche
   winner: z.lazy(() => TeamSchema).nullable(),
   looser: z.lazy(() => TeamSchema).nullable(),
   tournament: z.lazy(() => TournamentSchema),
+  group: z.lazy(() => GroupSchema).nullable(),
 }))
 
 /////////////////////////////////////////
@@ -328,6 +333,7 @@ export const GroupCountOutputTypeArgsSchema: z.ZodType<Prisma.GroupCountOutputTy
 
 export const GroupCountOutputTypeSelectSchema: z.ZodType<Prisma.GroupCountOutputTypeSelect> = z.object({
   teams: z.boolean().optional(),
+  matches: z.boolean().optional(),
 }).strict();
 
 export const GroupSelectSchema: z.ZodType<Prisma.GroupSelect> = z.object({
@@ -337,6 +343,7 @@ export const GroupSelectSchema: z.ZodType<Prisma.GroupSelect> = z.object({
   tournamentId: z.boolean().optional(),
   tournament: z.union([z.boolean(),z.lazy(() => TournamentArgsSchema)]).optional(),
   teams: z.union([z.boolean(),z.lazy(() => TeamArgsSchema)]).optional(),
+  matches: z.union([z.boolean(),z.lazy(() => MatchArgsSchema)]).optional(),
   _count: z.union([z.boolean(),z.lazy(() => GroupCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
@@ -360,6 +367,7 @@ export const MatchSelectSchema: z.ZodType<Prisma.MatchSelect> = z.object({
   winnerId: z.boolean().optional(),
   looserId: z.boolean().optional(),
   tournamentId: z.boolean().optional(),
+  groupId: z.boolean().optional(),
   team1Score: z.boolean().optional(),
   team2Score: z.boolean().optional(),
   team1: z.union([z.boolean(),z.lazy(() => TeamArgsSchema)]).optional(),
@@ -367,6 +375,7 @@ export const MatchSelectSchema: z.ZodType<Prisma.MatchSelect> = z.object({
   winner: z.union([z.boolean(),z.lazy(() => TeamArgsSchema)]).optional(),
   looser: z.union([z.boolean(),z.lazy(() => TeamArgsSchema)]).optional(),
   tournament: z.union([z.boolean(),z.lazy(() => TournamentArgsSchema)]).optional(),
+  group: z.union([z.boolean(),z.lazy(() => GroupArgsSchema)]).optional(),
 }).strict()
 
 
@@ -640,7 +649,8 @@ export const GroupWhereInputSchema: z.ZodType<Prisma.GroupWhereInput> = z.object
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   tournamentId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   tournament: z.union([ z.lazy(() => TournamentRelationFilterSchema),z.lazy(() => TournamentWhereInputSchema) ]).optional(),
-  teams: z.lazy(() => TeamListRelationFilterSchema).optional()
+  teams: z.lazy(() => TeamListRelationFilterSchema).optional(),
+  matches: z.lazy(() => MatchListRelationFilterSchema).optional()
 }).strict();
 
 export const GroupOrderByWithRelationInputSchema: z.ZodType<Prisma.GroupOrderByWithRelationInput> = z.object({
@@ -649,7 +659,8 @@ export const GroupOrderByWithRelationInputSchema: z.ZodType<Prisma.GroupOrderByW
   updatedAt: z.lazy(() => SortOrderSchema).optional(),
   tournamentId: z.lazy(() => SortOrderSchema).optional(),
   tournament: z.lazy(() => TournamentOrderByWithRelationInputSchema).optional(),
-  teams: z.lazy(() => TeamOrderByRelationAggregateInputSchema).optional()
+  teams: z.lazy(() => TeamOrderByRelationAggregateInputSchema).optional(),
+  matches: z.lazy(() => MatchOrderByRelationAggregateInputSchema).optional()
 }).strict();
 
 export const GroupWhereUniqueInputSchema: z.ZodType<Prisma.GroupWhereUniqueInput> = z.object({
@@ -664,7 +675,8 @@ export const GroupWhereUniqueInputSchema: z.ZodType<Prisma.GroupWhereUniqueInput
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   tournamentId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   tournament: z.union([ z.lazy(() => TournamentRelationFilterSchema),z.lazy(() => TournamentWhereInputSchema) ]).optional(),
-  teams: z.lazy(() => TeamListRelationFilterSchema).optional()
+  teams: z.lazy(() => TeamListRelationFilterSchema).optional(),
+  matches: z.lazy(() => MatchListRelationFilterSchema).optional()
 }).strict());
 
 export const GroupOrderByWithAggregationInputSchema: z.ZodType<Prisma.GroupOrderByWithAggregationInput> = z.object({
@@ -699,13 +711,15 @@ export const MatchWhereInputSchema: z.ZodType<Prisma.MatchWhereInput> = z.object
   winnerId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   looserId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   tournamentId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  team1Score: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  team2Score: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  groupId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  team1Score: z.union([ z.lazy(() => IntNullableFilterSchema),z.number() ]).optional().nullable(),
+  team2Score: z.union([ z.lazy(() => IntNullableFilterSchema),z.number() ]).optional().nullable(),
   team1: z.union([ z.lazy(() => TeamRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional(),
   team2: z.union([ z.lazy(() => TeamRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional(),
   winner: z.union([ z.lazy(() => TeamNullableRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional().nullable(),
   looser: z.union([ z.lazy(() => TeamNullableRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional().nullable(),
   tournament: z.union([ z.lazy(() => TournamentRelationFilterSchema),z.lazy(() => TournamentWhereInputSchema) ]).optional(),
+  group: z.union([ z.lazy(() => GroupNullableRelationFilterSchema),z.lazy(() => GroupWhereInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchOrderByWithRelationInputSchema: z.ZodType<Prisma.MatchOrderByWithRelationInput> = z.object({
@@ -717,13 +731,15 @@ export const MatchOrderByWithRelationInputSchema: z.ZodType<Prisma.MatchOrderByW
   winnerId: z.lazy(() => SortOrderSchema).optional(),
   looserId: z.lazy(() => SortOrderSchema).optional(),
   tournamentId: z.lazy(() => SortOrderSchema).optional(),
+  groupId: z.lazy(() => SortOrderSchema).optional(),
   team1Score: z.lazy(() => SortOrderSchema).optional(),
   team2Score: z.lazy(() => SortOrderSchema).optional(),
   team1: z.lazy(() => TeamOrderByWithRelationInputSchema).optional(),
   team2: z.lazy(() => TeamOrderByWithRelationInputSchema).optional(),
   winner: z.lazy(() => TeamOrderByWithRelationInputSchema).optional(),
   looser: z.lazy(() => TeamOrderByWithRelationInputSchema).optional(),
-  tournament: z.lazy(() => TournamentOrderByWithRelationInputSchema).optional()
+  tournament: z.lazy(() => TournamentOrderByWithRelationInputSchema).optional(),
+  group: z.lazy(() => GroupOrderByWithRelationInputSchema).optional()
 }).strict();
 
 export const MatchWhereUniqueInputSchema: z.ZodType<Prisma.MatchWhereUniqueInput> = z.object({
@@ -741,13 +757,15 @@ export const MatchWhereUniqueInputSchema: z.ZodType<Prisma.MatchWhereUniqueInput
   winnerId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   looserId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   tournamentId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  team1Score: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
-  team2Score: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  groupId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  team1Score: z.union([ z.lazy(() => IntNullableFilterSchema),z.number().int() ]).optional().nullable(),
+  team2Score: z.union([ z.lazy(() => IntNullableFilterSchema),z.number().int() ]).optional().nullable(),
   team1: z.union([ z.lazy(() => TeamRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional(),
   team2: z.union([ z.lazy(() => TeamRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional(),
   winner: z.union([ z.lazy(() => TeamNullableRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional().nullable(),
   looser: z.union([ z.lazy(() => TeamNullableRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional().nullable(),
   tournament: z.union([ z.lazy(() => TournamentRelationFilterSchema),z.lazy(() => TournamentWhereInputSchema) ]).optional(),
+  group: z.union([ z.lazy(() => GroupNullableRelationFilterSchema),z.lazy(() => GroupWhereInputSchema) ]).optional().nullable(),
 }).strict());
 
 export const MatchOrderByWithAggregationInputSchema: z.ZodType<Prisma.MatchOrderByWithAggregationInput> = z.object({
@@ -759,6 +777,7 @@ export const MatchOrderByWithAggregationInputSchema: z.ZodType<Prisma.MatchOrder
   winnerId: z.lazy(() => SortOrderSchema).optional(),
   looserId: z.lazy(() => SortOrderSchema).optional(),
   tournamentId: z.lazy(() => SortOrderSchema).optional(),
+  groupId: z.lazy(() => SortOrderSchema).optional(),
   team1Score: z.lazy(() => SortOrderSchema).optional(),
   team2Score: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => MatchCountOrderByAggregateInputSchema).optional(),
@@ -780,8 +799,9 @@ export const MatchScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.MatchSc
   winnerId: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   looserId: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   tournamentId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  team1Score: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
-  team2Score: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  groupId: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
+  team1Score: z.union([ z.lazy(() => IntNullableWithAggregatesFilterSchema),z.number() ]).optional().nullable(),
+  team2Score: z.union([ z.lazy(() => IntNullableWithAggregatesFilterSchema),z.number() ]).optional().nullable(),
 }).strict();
 
 export const TournamentCreateInputSchema: z.ZodType<Prisma.TournamentCreateInput> = z.object({
@@ -1009,7 +1029,8 @@ export const GroupCreateInputSchema: z.ZodType<Prisma.GroupCreateInput> = z.obje
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
   tournament: z.lazy(() => TournamentCreateNestedOneWithoutGroupsInputSchema),
-  teams: z.lazy(() => TeamCreateNestedManyWithoutGroupInputSchema).optional()
+  teams: z.lazy(() => TeamCreateNestedManyWithoutGroupInputSchema).optional(),
+  matches: z.lazy(() => MatchCreateNestedManyWithoutGroupInputSchema).optional()
 }).strict();
 
 export const GroupUncheckedCreateInputSchema: z.ZodType<Prisma.GroupUncheckedCreateInput> = z.object({
@@ -1017,21 +1038,24 @@ export const GroupUncheckedCreateInputSchema: z.ZodType<Prisma.GroupUncheckedCre
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
   tournamentId: z.string(),
-  teams: z.lazy(() => TeamUncheckedCreateNestedManyWithoutGroupInputSchema).optional()
+  teams: z.lazy(() => TeamUncheckedCreateNestedManyWithoutGroupInputSchema).optional(),
+  matches: z.lazy(() => MatchUncheckedCreateNestedManyWithoutGroupInputSchema).optional()
 }).strict();
 
 export const GroupUpdateInputSchema: z.ZodType<Prisma.GroupUpdateInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutGroupsNestedInputSchema).optional(),
-  teams: z.lazy(() => TeamUpdateManyWithoutGroupNestedInputSchema).optional()
+  teams: z.lazy(() => TeamUpdateManyWithoutGroupNestedInputSchema).optional(),
+  matches: z.lazy(() => MatchUpdateManyWithoutGroupNestedInputSchema).optional()
 }).strict();
 
 export const GroupUncheckedUpdateInputSchema: z.ZodType<Prisma.GroupUncheckedUpdateInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  teams: z.lazy(() => TeamUncheckedUpdateManyWithoutGroupNestedInputSchema).optional()
+  teams: z.lazy(() => TeamUncheckedUpdateManyWithoutGroupNestedInputSchema).optional(),
+  matches: z.lazy(() => MatchUncheckedUpdateManyWithoutGroupNestedInputSchema).optional()
 }).strict();
 
 export const GroupCreateManyInputSchema: z.ZodType<Prisma.GroupCreateManyInput> = z.object({
@@ -1056,13 +1080,14 @@ export const MatchCreateInputSchema: z.ZodType<Prisma.MatchCreateInput> = z.obje
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable(),
   team1: z.lazy(() => TeamCreateNestedOneWithoutTeam1MatchesInputSchema),
   team2: z.lazy(() => TeamCreateNestedOneWithoutTeam2MatchesInputSchema),
   winner: z.lazy(() => TeamCreateNestedOneWithoutWinnerMatchesInputSchema).optional(),
   looser: z.lazy(() => TeamCreateNestedOneWithoutLooserMatchesInputSchema).optional(),
-  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema)
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema),
+  group: z.lazy(() => GroupCreateNestedOneWithoutMatchesInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedCreateInputSchema: z.ZodType<Prisma.MatchUncheckedCreateInput> = z.object({
@@ -1074,20 +1099,22 @@ export const MatchUncheckedCreateInputSchema: z.ZodType<Prisma.MatchUncheckedCre
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchUpdateInputSchema: z.ZodType<Prisma.MatchUpdateInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   team1: z.lazy(() => TeamUpdateOneRequiredWithoutTeam1MatchesNestedInputSchema).optional(),
   team2: z.lazy(() => TeamUpdateOneRequiredWithoutTeam2MatchesNestedInputSchema).optional(),
   winner: z.lazy(() => TeamUpdateOneWithoutWinnerMatchesNestedInputSchema).optional(),
   looser: z.lazy(() => TeamUpdateOneWithoutLooserMatchesNestedInputSchema).optional(),
-  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional()
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional(),
+  group: z.lazy(() => GroupUpdateOneWithoutMatchesNestedInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedUpdateInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateInput> = z.object({
@@ -1098,8 +1125,9 @@ export const MatchUncheckedUpdateInputSchema: z.ZodType<Prisma.MatchUncheckedUpd
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchCreateManyInputSchema: z.ZodType<Prisma.MatchCreateManyInput> = z.object({
@@ -1111,15 +1139,16 @@ export const MatchCreateManyInputSchema: z.ZodType<Prisma.MatchCreateManyInput> 
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchUpdateManyMutationInputSchema: z.ZodType<Prisma.MatchUpdateManyMutationInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUncheckedUpdateManyInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyInput> = z.object({
@@ -1130,8 +1159,9 @@ export const MatchUncheckedUpdateManyInputSchema: z.ZodType<Prisma.MatchUnchecke
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const StringFilterSchema: z.ZodType<Prisma.StringFilter> = z.object({
@@ -1424,15 +1454,16 @@ export const GroupMinOrderByAggregateInputSchema: z.ZodType<Prisma.GroupMinOrder
   tournamentId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
+export const IntNullableFilterSchema: z.ZodType<Prisma.IntNullableFilter> = z.object({
+  equals: z.number().optional().nullable(),
+  in: z.number().array().optional().nullable(),
+  notIn: z.number().array().optional().nullable(),
   lt: z.number().optional(),
   lte: z.number().optional(),
   gt: z.number().optional(),
   gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntNullableFilterSchema) ]).optional().nullable(),
+  isSet: z.boolean().optional()
 }).strict();
 
 export const TeamNullableRelationFilterSchema: z.ZodType<Prisma.TeamNullableRelationFilter> = z.object({
@@ -1449,6 +1480,7 @@ export const MatchCountOrderByAggregateInputSchema: z.ZodType<Prisma.MatchCountO
   winnerId: z.lazy(() => SortOrderSchema).optional(),
   looserId: z.lazy(() => SortOrderSchema).optional(),
   tournamentId: z.lazy(() => SortOrderSchema).optional(),
+  groupId: z.lazy(() => SortOrderSchema).optional(),
   team1Score: z.lazy(() => SortOrderSchema).optional(),
   team2Score: z.lazy(() => SortOrderSchema).optional()
 }).strict();
@@ -1467,6 +1499,7 @@ export const MatchMaxOrderByAggregateInputSchema: z.ZodType<Prisma.MatchMaxOrder
   winnerId: z.lazy(() => SortOrderSchema).optional(),
   looserId: z.lazy(() => SortOrderSchema).optional(),
   tournamentId: z.lazy(() => SortOrderSchema).optional(),
+  groupId: z.lazy(() => SortOrderSchema).optional(),
   team1Score: z.lazy(() => SortOrderSchema).optional(),
   team2Score: z.lazy(() => SortOrderSchema).optional()
 }).strict();
@@ -1480,6 +1513,7 @@ export const MatchMinOrderByAggregateInputSchema: z.ZodType<Prisma.MatchMinOrder
   winnerId: z.lazy(() => SortOrderSchema).optional(),
   looserId: z.lazy(() => SortOrderSchema).optional(),
   tournamentId: z.lazy(() => SortOrderSchema).optional(),
+  groupId: z.lazy(() => SortOrderSchema).optional(),
   team1Score: z.lazy(() => SortOrderSchema).optional(),
   team2Score: z.lazy(() => SortOrderSchema).optional()
 }).strict();
@@ -1489,20 +1523,21 @@ export const MatchSumOrderByAggregateInputSchema: z.ZodType<Prisma.MatchSumOrder
   team2Score: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
+export const IntNullableWithAggregatesFilterSchema: z.ZodType<Prisma.IntNullableWithAggregatesFilter> = z.object({
+  equals: z.number().optional().nullable(),
+  in: z.number().array().optional().nullable(),
+  notIn: z.number().array().optional().nullable(),
   lt: z.number().optional(),
   lte: z.number().optional(),
   gt: z.number().optional(),
   gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedIntFilterSchema).optional(),
-  _max: z.lazy(() => NestedIntFilterSchema).optional()
+  not: z.union([ z.number(),z.lazy(() => NestedIntNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatNullableFilterSchema).optional(),
+  _sum: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  isSet: z.boolean().optional()
 }).strict();
 
 export const TeamCreateNestedManyWithoutTournamentInputSchema: z.ZodType<Prisma.TeamCreateNestedManyWithoutTournamentInput> = z.object({
@@ -1919,11 +1954,25 @@ export const TeamCreateNestedManyWithoutGroupInputSchema: z.ZodType<Prisma.TeamC
   connect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
+export const MatchCreateNestedManyWithoutGroupInputSchema: z.ZodType<Prisma.MatchCreateNestedManyWithoutGroupInput> = z.object({
+  create: z.union([ z.lazy(() => MatchCreateWithoutGroupInputSchema),z.lazy(() => MatchCreateWithoutGroupInputSchema).array(),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema),z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MatchCreateManyGroupInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
 export const TeamUncheckedCreateNestedManyWithoutGroupInputSchema: z.ZodType<Prisma.TeamUncheckedCreateNestedManyWithoutGroupInput> = z.object({
   create: z.union([ z.lazy(() => TeamCreateWithoutGroupInputSchema),z.lazy(() => TeamCreateWithoutGroupInputSchema).array(),z.lazy(() => TeamUncheckedCreateWithoutGroupInputSchema),z.lazy(() => TeamUncheckedCreateWithoutGroupInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => TeamCreateOrConnectWithoutGroupInputSchema),z.lazy(() => TeamCreateOrConnectWithoutGroupInputSchema).array() ]).optional(),
   createMany: z.lazy(() => TeamCreateManyGroupInputEnvelopeSchema).optional(),
   connect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const MatchUncheckedCreateNestedManyWithoutGroupInputSchema: z.ZodType<Prisma.MatchUncheckedCreateNestedManyWithoutGroupInput> = z.object({
+  create: z.union([ z.lazy(() => MatchCreateWithoutGroupInputSchema),z.lazy(() => MatchCreateWithoutGroupInputSchema).array(),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema),z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MatchCreateManyGroupInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
 export const TournamentUpdateOneRequiredWithoutGroupsNestedInputSchema: z.ZodType<Prisma.TournamentUpdateOneRequiredWithoutGroupsNestedInput> = z.object({
@@ -1948,6 +1997,20 @@ export const TeamUpdateManyWithoutGroupNestedInputSchema: z.ZodType<Prisma.TeamU
   deleteMany: z.union([ z.lazy(() => TeamScalarWhereInputSchema),z.lazy(() => TeamScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
+export const MatchUpdateManyWithoutGroupNestedInputSchema: z.ZodType<Prisma.MatchUpdateManyWithoutGroupNestedInput> = z.object({
+  create: z.union([ z.lazy(() => MatchCreateWithoutGroupInputSchema),z.lazy(() => MatchCreateWithoutGroupInputSchema).array(),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema),z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => MatchUpsertWithWhereUniqueWithoutGroupInputSchema),z.lazy(() => MatchUpsertWithWhereUniqueWithoutGroupInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MatchCreateManyGroupInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => MatchUpdateWithWhereUniqueWithoutGroupInputSchema),z.lazy(() => MatchUpdateWithWhereUniqueWithoutGroupInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => MatchUpdateManyWithWhereWithoutGroupInputSchema),z.lazy(() => MatchUpdateManyWithWhereWithoutGroupInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => MatchScalarWhereInputSchema),z.lazy(() => MatchScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
 export const TeamUncheckedUpdateManyWithoutGroupNestedInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateManyWithoutGroupNestedInput> = z.object({
   create: z.union([ z.lazy(() => TeamCreateWithoutGroupInputSchema),z.lazy(() => TeamCreateWithoutGroupInputSchema).array(),z.lazy(() => TeamUncheckedCreateWithoutGroupInputSchema),z.lazy(() => TeamUncheckedCreateWithoutGroupInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => TeamCreateOrConnectWithoutGroupInputSchema),z.lazy(() => TeamCreateOrConnectWithoutGroupInputSchema).array() ]).optional(),
@@ -1960,6 +2023,20 @@ export const TeamUncheckedUpdateManyWithoutGroupNestedInputSchema: z.ZodType<Pri
   update: z.union([ z.lazy(() => TeamUpdateWithWhereUniqueWithoutGroupInputSchema),z.lazy(() => TeamUpdateWithWhereUniqueWithoutGroupInputSchema).array() ]).optional(),
   updateMany: z.union([ z.lazy(() => TeamUpdateManyWithWhereWithoutGroupInputSchema),z.lazy(() => TeamUpdateManyWithWhereWithoutGroupInputSchema).array() ]).optional(),
   deleteMany: z.union([ z.lazy(() => TeamScalarWhereInputSchema),z.lazy(() => TeamScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const MatchUncheckedUpdateManyWithoutGroupNestedInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyWithoutGroupNestedInput> = z.object({
+  create: z.union([ z.lazy(() => MatchCreateWithoutGroupInputSchema),z.lazy(() => MatchCreateWithoutGroupInputSchema).array(),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema),z.lazy(() => MatchCreateOrConnectWithoutGroupInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => MatchUpsertWithWhereUniqueWithoutGroupInputSchema),z.lazy(() => MatchUpsertWithWhereUniqueWithoutGroupInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MatchCreateManyGroupInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => MatchWhereUniqueInputSchema),z.lazy(() => MatchWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => MatchUpdateWithWhereUniqueWithoutGroupInputSchema),z.lazy(() => MatchUpdateWithWhereUniqueWithoutGroupInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => MatchUpdateManyWithWhereWithoutGroupInputSchema),z.lazy(() => MatchUpdateManyWithWhereWithoutGroupInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => MatchScalarWhereInputSchema),z.lazy(() => MatchScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
 export const TeamCreateNestedOneWithoutTeam1MatchesInputSchema: z.ZodType<Prisma.TeamCreateNestedOneWithoutTeam1MatchesInput> = z.object({
@@ -1992,12 +2069,19 @@ export const TournamentCreateNestedOneWithoutMatchesInputSchema: z.ZodType<Prism
   connect: z.lazy(() => TournamentWhereUniqueInputSchema).optional()
 }).strict();
 
-export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> = z.object({
-  set: z.number().optional(),
+export const GroupCreateNestedOneWithoutMatchesInputSchema: z.ZodType<Prisma.GroupCreateNestedOneWithoutMatchesInput> = z.object({
+  create: z.union([ z.lazy(() => GroupCreateWithoutMatchesInputSchema),z.lazy(() => GroupUncheckedCreateWithoutMatchesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => GroupCreateOrConnectWithoutMatchesInputSchema).optional(),
+  connect: z.lazy(() => GroupWhereUniqueInputSchema).optional()
+}).strict();
+
+export const NullableIntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableIntFieldUpdateOperationsInput> = z.object({
+  set: z.number().optional().nullable(),
   increment: z.number().optional(),
   decrement: z.number().optional(),
   multiply: z.number().optional(),
-  divide: z.number().optional()
+  divide: z.number().optional(),
+  unset: z.boolean().optional()
 }).strict();
 
 export const TeamUpdateOneRequiredWithoutTeam1MatchesNestedInputSchema: z.ZodType<Prisma.TeamUpdateOneRequiredWithoutTeam1MatchesNestedInput> = z.object({
@@ -2042,6 +2126,16 @@ export const TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema: z.ZodTy
   upsert: z.lazy(() => TournamentUpsertWithoutMatchesInputSchema).optional(),
   connect: z.lazy(() => TournamentWhereUniqueInputSchema).optional(),
   update: z.union([ z.lazy(() => TournamentUpdateToOneWithWhereWithoutMatchesInputSchema),z.lazy(() => TournamentUpdateWithoutMatchesInputSchema),z.lazy(() => TournamentUncheckedUpdateWithoutMatchesInputSchema) ]).optional(),
+}).strict();
+
+export const GroupUpdateOneWithoutMatchesNestedInputSchema: z.ZodType<Prisma.GroupUpdateOneWithoutMatchesNestedInput> = z.object({
+  create: z.union([ z.lazy(() => GroupCreateWithoutMatchesInputSchema),z.lazy(() => GroupUncheckedCreateWithoutMatchesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => GroupCreateOrConnectWithoutMatchesInputSchema).optional(),
+  upsert: z.lazy(() => GroupUpsertWithoutMatchesInputSchema).optional(),
+  disconnect: z.boolean().optional(),
+  delete: z.union([ z.boolean(),z.lazy(() => GroupWhereInputSchema) ]).optional(),
+  connect: z.lazy(() => GroupWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => GroupUpdateToOneWithWhereWithoutMatchesInputSchema),z.lazy(() => GroupUpdateWithoutMatchesInputSchema),z.lazy(() => GroupUncheckedUpdateWithoutMatchesInputSchema) ]).optional(),
 }).strict();
 
 export const NestedStringFilterSchema: z.ZodType<Prisma.NestedStringFilter> = z.object({
@@ -2190,31 +2284,33 @@ export const NestedIntNullableFilterSchema: z.ZodType<Prisma.NestedIntNullableFi
   isSet: z.boolean().optional()
 }).strict();
 
-export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
+export const NestedIntNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntNullableWithAggregatesFilter> = z.object({
+  equals: z.number().optional().nullable(),
+  in: z.number().array().optional().nullable(),
+  notIn: z.number().array().optional().nullable(),
   lt: z.number().optional(),
   lte: z.number().optional(),
   gt: z.number().optional(),
   gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedIntFilterSchema).optional(),
-  _max: z.lazy(() => NestedIntFilterSchema).optional()
+  not: z.union([ z.number(),z.lazy(() => NestedIntNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatNullableFilterSchema).optional(),
+  _sum: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  isSet: z.boolean().optional()
 }).strict();
 
-export const NestedFloatFilterSchema: z.ZodType<Prisma.NestedFloatFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
+export const NestedFloatNullableFilterSchema: z.ZodType<Prisma.NestedFloatNullableFilter> = z.object({
+  equals: z.number().optional().nullable(),
+  in: z.number().array().optional().nullable(),
+  notIn: z.number().array().optional().nullable(),
   lt: z.number().optional(),
   lte: z.number().optional(),
   gt: z.number().optional(),
   gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedFloatFilterSchema) ]).optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedFloatNullableFilterSchema) ]).optional().nullable(),
+  isSet: z.boolean().optional()
 }).strict();
 
 export const TeamCreateWithoutTournamentInputSchema: z.ZodType<Prisma.TeamCreateWithoutTournamentInput> = z.object({
@@ -2258,12 +2354,13 @@ export const MatchCreateWithoutTournamentInputSchema: z.ZodType<Prisma.MatchCrea
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable(),
   team1: z.lazy(() => TeamCreateNestedOneWithoutTeam1MatchesInputSchema),
   team2: z.lazy(() => TeamCreateNestedOneWithoutTeam2MatchesInputSchema),
   winner: z.lazy(() => TeamCreateNestedOneWithoutWinnerMatchesInputSchema).optional(),
-  looser: z.lazy(() => TeamCreateNestedOneWithoutLooserMatchesInputSchema).optional()
+  looser: z.lazy(() => TeamCreateNestedOneWithoutLooserMatchesInputSchema).optional(),
+  group: z.lazy(() => GroupCreateNestedOneWithoutMatchesInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedCreateWithoutTournamentInputSchema: z.ZodType<Prisma.MatchUncheckedCreateWithoutTournamentInput> = z.object({
@@ -2274,8 +2371,9 @@ export const MatchUncheckedCreateWithoutTournamentInputSchema: z.ZodType<Prisma.
   team2Id: z.string(),
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateOrConnectWithoutTournamentInputSchema: z.ZodType<Prisma.MatchCreateOrConnectWithoutTournamentInput> = z.object({
@@ -2291,14 +2389,16 @@ export const GroupCreateWithoutTournamentInputSchema: z.ZodType<Prisma.GroupCrea
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  teams: z.lazy(() => TeamCreateNestedManyWithoutGroupInputSchema).optional()
+  teams: z.lazy(() => TeamCreateNestedManyWithoutGroupInputSchema).optional(),
+  matches: z.lazy(() => MatchCreateNestedManyWithoutGroupInputSchema).optional()
 }).strict();
 
 export const GroupUncheckedCreateWithoutTournamentInputSchema: z.ZodType<Prisma.GroupUncheckedCreateWithoutTournamentInput> = z.object({
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  teams: z.lazy(() => TeamUncheckedCreateNestedManyWithoutGroupInputSchema).optional()
+  teams: z.lazy(() => TeamUncheckedCreateNestedManyWithoutGroupInputSchema).optional(),
+  matches: z.lazy(() => MatchUncheckedCreateNestedManyWithoutGroupInputSchema).optional()
 }).strict();
 
 export const GroupCreateOrConnectWithoutTournamentInputSchema: z.ZodType<Prisma.GroupCreateOrConnectWithoutTournamentInput> = z.object({
@@ -2367,8 +2467,9 @@ export const MatchScalarWhereInputSchema: z.ZodType<Prisma.MatchScalarWhereInput
   winnerId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   looserId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   tournamentId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  team1Score: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  team2Score: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  groupId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  team1Score: z.union([ z.lazy(() => IntNullableFilterSchema),z.number() ]).optional().nullable(),
+  team2Score: z.union([ z.lazy(() => IntNullableFilterSchema),z.number() ]).optional().nullable(),
 }).strict();
 
 export const GroupUpsertWithWhereUniqueWithoutTournamentInputSchema: z.ZodType<Prisma.GroupUpsertWithWhereUniqueWithoutTournamentInput> = z.object({
@@ -2455,12 +2556,13 @@ export const MatchCreateWithoutTeam1InputSchema: z.ZodType<Prisma.MatchCreateWit
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable(),
   team2: z.lazy(() => TeamCreateNestedOneWithoutTeam2MatchesInputSchema),
   winner: z.lazy(() => TeamCreateNestedOneWithoutWinnerMatchesInputSchema).optional(),
   looser: z.lazy(() => TeamCreateNestedOneWithoutLooserMatchesInputSchema).optional(),
-  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema)
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema),
+  group: z.lazy(() => GroupCreateNestedOneWithoutMatchesInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedCreateWithoutTeam1InputSchema: z.ZodType<Prisma.MatchUncheckedCreateWithoutTeam1Input> = z.object({
@@ -2471,8 +2573,9 @@ export const MatchUncheckedCreateWithoutTeam1InputSchema: z.ZodType<Prisma.Match
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateOrConnectWithoutTeam1InputSchema: z.ZodType<Prisma.MatchCreateOrConnectWithoutTeam1Input> = z.object({
@@ -2488,12 +2591,13 @@ export const MatchCreateWithoutTeam2InputSchema: z.ZodType<Prisma.MatchCreateWit
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable(),
   team1: z.lazy(() => TeamCreateNestedOneWithoutTeam1MatchesInputSchema),
   winner: z.lazy(() => TeamCreateNestedOneWithoutWinnerMatchesInputSchema).optional(),
   looser: z.lazy(() => TeamCreateNestedOneWithoutLooserMatchesInputSchema).optional(),
-  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema)
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema),
+  group: z.lazy(() => GroupCreateNestedOneWithoutMatchesInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedCreateWithoutTeam2InputSchema: z.ZodType<Prisma.MatchUncheckedCreateWithoutTeam2Input> = z.object({
@@ -2504,8 +2608,9 @@ export const MatchUncheckedCreateWithoutTeam2InputSchema: z.ZodType<Prisma.Match
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateOrConnectWithoutTeam2InputSchema: z.ZodType<Prisma.MatchCreateOrConnectWithoutTeam2Input> = z.object({
@@ -2521,12 +2626,13 @@ export const MatchCreateWithoutWinnerInputSchema: z.ZodType<Prisma.MatchCreateWi
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable(),
   team1: z.lazy(() => TeamCreateNestedOneWithoutTeam1MatchesInputSchema),
   team2: z.lazy(() => TeamCreateNestedOneWithoutTeam2MatchesInputSchema),
   looser: z.lazy(() => TeamCreateNestedOneWithoutLooserMatchesInputSchema).optional(),
-  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema)
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema),
+  group: z.lazy(() => GroupCreateNestedOneWithoutMatchesInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedCreateWithoutWinnerInputSchema: z.ZodType<Prisma.MatchUncheckedCreateWithoutWinnerInput> = z.object({
@@ -2537,8 +2643,9 @@ export const MatchUncheckedCreateWithoutWinnerInputSchema: z.ZodType<Prisma.Matc
   team2Id: z.string(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateOrConnectWithoutWinnerInputSchema: z.ZodType<Prisma.MatchCreateOrConnectWithoutWinnerInput> = z.object({
@@ -2554,12 +2661,13 @@ export const MatchCreateWithoutLooserInputSchema: z.ZodType<Prisma.MatchCreateWi
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable(),
   team1: z.lazy(() => TeamCreateNestedOneWithoutTeam1MatchesInputSchema),
   team2: z.lazy(() => TeamCreateNestedOneWithoutTeam2MatchesInputSchema),
   winner: z.lazy(() => TeamCreateNestedOneWithoutWinnerMatchesInputSchema).optional(),
-  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema)
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema),
+  group: z.lazy(() => GroupCreateNestedOneWithoutMatchesInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedCreateWithoutLooserInputSchema: z.ZodType<Prisma.MatchUncheckedCreateWithoutLooserInput> = z.object({
@@ -2570,8 +2678,9 @@ export const MatchUncheckedCreateWithoutLooserInputSchema: z.ZodType<Prisma.Matc
   team2Id: z.string(),
   winnerId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateOrConnectWithoutLooserInputSchema: z.ZodType<Prisma.MatchCreateOrConnectWithoutLooserInput> = z.object({
@@ -2587,14 +2696,16 @@ export const GroupCreateWithoutTeamsInputSchema: z.ZodType<Prisma.GroupCreateWit
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  tournament: z.lazy(() => TournamentCreateNestedOneWithoutGroupsInputSchema)
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutGroupsInputSchema),
+  matches: z.lazy(() => MatchCreateNestedManyWithoutGroupInputSchema).optional()
 }).strict();
 
 export const GroupUncheckedCreateWithoutTeamsInputSchema: z.ZodType<Prisma.GroupUncheckedCreateWithoutTeamsInput> = z.object({
   id: z.string().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  tournamentId: z.string()
+  tournamentId: z.string(),
+  matches: z.lazy(() => MatchUncheckedCreateNestedManyWithoutGroupInputSchema).optional()
 }).strict();
 
 export const GroupCreateOrConnectWithoutTeamsInputSchema: z.ZodType<Prisma.GroupCreateOrConnectWithoutTeamsInput> = z.object({
@@ -2742,13 +2853,15 @@ export const GroupUpdateToOneWithWhereWithoutTeamsInputSchema: z.ZodType<Prisma.
 export const GroupUpdateWithoutTeamsInputSchema: z.ZodType<Prisma.GroupUpdateWithoutTeamsInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutGroupsNestedInputSchema).optional()
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutGroupsNestedInputSchema).optional(),
+  matches: z.lazy(() => MatchUpdateManyWithoutGroupNestedInputSchema).optional()
 }).strict();
 
 export const GroupUncheckedUpdateWithoutTeamsInputSchema: z.ZodType<Prisma.GroupUncheckedUpdateWithoutTeamsInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  matches: z.lazy(() => MatchUncheckedUpdateManyWithoutGroupNestedInputSchema).optional()
 }).strict();
 
 export const TeamCreateWithoutPlayersInputSchema: z.ZodType<Prisma.TeamCreateWithoutPlayersInput> = z.object({
@@ -2889,6 +3002,41 @@ export const TeamCreateManyGroupInputEnvelopeSchema: z.ZodType<Prisma.TeamCreate
   data: z.union([ z.lazy(() => TeamCreateManyGroupInputSchema),z.lazy(() => TeamCreateManyGroupInputSchema).array() ]),
 }).strict();
 
+export const MatchCreateWithoutGroupInputSchema: z.ZodType<Prisma.MatchCreateWithoutGroupInput> = z.object({
+  id: z.string().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable(),
+  team1: z.lazy(() => TeamCreateNestedOneWithoutTeam1MatchesInputSchema),
+  team2: z.lazy(() => TeamCreateNestedOneWithoutTeam2MatchesInputSchema),
+  winner: z.lazy(() => TeamCreateNestedOneWithoutWinnerMatchesInputSchema).optional(),
+  looser: z.lazy(() => TeamCreateNestedOneWithoutLooserMatchesInputSchema).optional(),
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutMatchesInputSchema)
+}).strict();
+
+export const MatchUncheckedCreateWithoutGroupInputSchema: z.ZodType<Prisma.MatchUncheckedCreateWithoutGroupInput> = z.object({
+  id: z.string().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  team1Id: z.string(),
+  team2Id: z.string(),
+  winnerId: z.string().optional().nullable(),
+  looserId: z.string().optional().nullable(),
+  tournamentId: z.string(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
+}).strict();
+
+export const MatchCreateOrConnectWithoutGroupInputSchema: z.ZodType<Prisma.MatchCreateOrConnectWithoutGroupInput> = z.object({
+  where: z.lazy(() => MatchWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => MatchCreateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema) ]),
+}).strict();
+
+export const MatchCreateManyGroupInputEnvelopeSchema: z.ZodType<Prisma.MatchCreateManyGroupInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => MatchCreateManyGroupInputSchema),z.lazy(() => MatchCreateManyGroupInputSchema).array() ]),
+}).strict();
+
 export const TournamentUpsertWithoutGroupsInputSchema: z.ZodType<Prisma.TournamentUpsertWithoutGroupsInput> = z.object({
   update: z.union([ z.lazy(() => TournamentUpdateWithoutGroupsInputSchema),z.lazy(() => TournamentUncheckedUpdateWithoutGroupsInputSchema) ]),
   create: z.union([ z.lazy(() => TournamentCreateWithoutGroupsInputSchema),z.lazy(() => TournamentUncheckedCreateWithoutGroupsInputSchema) ]),
@@ -2938,6 +3086,22 @@ export const TeamUpdateWithWhereUniqueWithoutGroupInputSchema: z.ZodType<Prisma.
 export const TeamUpdateManyWithWhereWithoutGroupInputSchema: z.ZodType<Prisma.TeamUpdateManyWithWhereWithoutGroupInput> = z.object({
   where: z.lazy(() => TeamScalarWhereInputSchema),
   data: z.union([ z.lazy(() => TeamUpdateManyMutationInputSchema),z.lazy(() => TeamUncheckedUpdateManyWithoutGroupInputSchema) ]),
+}).strict();
+
+export const MatchUpsertWithWhereUniqueWithoutGroupInputSchema: z.ZodType<Prisma.MatchUpsertWithWhereUniqueWithoutGroupInput> = z.object({
+  where: z.lazy(() => MatchWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => MatchUpdateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedUpdateWithoutGroupInputSchema) ]),
+  create: z.union([ z.lazy(() => MatchCreateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedCreateWithoutGroupInputSchema) ]),
+}).strict();
+
+export const MatchUpdateWithWhereUniqueWithoutGroupInputSchema: z.ZodType<Prisma.MatchUpdateWithWhereUniqueWithoutGroupInput> = z.object({
+  where: z.lazy(() => MatchWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => MatchUpdateWithoutGroupInputSchema),z.lazy(() => MatchUncheckedUpdateWithoutGroupInputSchema) ]),
+}).strict();
+
+export const MatchUpdateManyWithWhereWithoutGroupInputSchema: z.ZodType<Prisma.MatchUpdateManyWithWhereWithoutGroupInput> = z.object({
+  where: z.lazy(() => MatchScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => MatchUpdateManyMutationInputSchema),z.lazy(() => MatchUncheckedUpdateManyWithoutGroupInputSchema) ]),
 }).strict();
 
 export const TeamCreateWithoutTeam1MatchesInputSchema: z.ZodType<Prisma.TeamCreateWithoutTeam1MatchesInput> = z.object({
@@ -3101,6 +3265,27 @@ export const TournamentUncheckedCreateWithoutMatchesInputSchema: z.ZodType<Prism
 export const TournamentCreateOrConnectWithoutMatchesInputSchema: z.ZodType<Prisma.TournamentCreateOrConnectWithoutMatchesInput> = z.object({
   where: z.lazy(() => TournamentWhereUniqueInputSchema),
   create: z.union([ z.lazy(() => TournamentCreateWithoutMatchesInputSchema),z.lazy(() => TournamentUncheckedCreateWithoutMatchesInputSchema) ]),
+}).strict();
+
+export const GroupCreateWithoutMatchesInputSchema: z.ZodType<Prisma.GroupCreateWithoutMatchesInput> = z.object({
+  id: z.string().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  tournament: z.lazy(() => TournamentCreateNestedOneWithoutGroupsInputSchema),
+  teams: z.lazy(() => TeamCreateNestedManyWithoutGroupInputSchema).optional()
+}).strict();
+
+export const GroupUncheckedCreateWithoutMatchesInputSchema: z.ZodType<Prisma.GroupUncheckedCreateWithoutMatchesInput> = z.object({
+  id: z.string().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  tournamentId: z.string(),
+  teams: z.lazy(() => TeamUncheckedCreateNestedManyWithoutGroupInputSchema).optional()
+}).strict();
+
+export const GroupCreateOrConnectWithoutMatchesInputSchema: z.ZodType<Prisma.GroupCreateOrConnectWithoutMatchesInput> = z.object({
+  where: z.lazy(() => GroupWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => GroupCreateWithoutMatchesInputSchema),z.lazy(() => GroupUncheckedCreateWithoutMatchesInputSchema) ]),
 }).strict();
 
 export const TeamUpsertWithoutTeam1MatchesInputSchema: z.ZodType<Prisma.TeamUpsertWithoutTeam1MatchesInput> = z.object({
@@ -3286,6 +3471,31 @@ export const TournamentUncheckedUpdateWithoutMatchesInputSchema: z.ZodType<Prism
   groups: z.lazy(() => GroupUncheckedUpdateManyWithoutTournamentNestedInputSchema).optional()
 }).strict();
 
+export const GroupUpsertWithoutMatchesInputSchema: z.ZodType<Prisma.GroupUpsertWithoutMatchesInput> = z.object({
+  update: z.union([ z.lazy(() => GroupUpdateWithoutMatchesInputSchema),z.lazy(() => GroupUncheckedUpdateWithoutMatchesInputSchema) ]),
+  create: z.union([ z.lazy(() => GroupCreateWithoutMatchesInputSchema),z.lazy(() => GroupUncheckedCreateWithoutMatchesInputSchema) ]),
+  where: z.lazy(() => GroupWhereInputSchema).optional()
+}).strict();
+
+export const GroupUpdateToOneWithWhereWithoutMatchesInputSchema: z.ZodType<Prisma.GroupUpdateToOneWithWhereWithoutMatchesInput> = z.object({
+  where: z.lazy(() => GroupWhereInputSchema).optional(),
+  data: z.union([ z.lazy(() => GroupUpdateWithoutMatchesInputSchema),z.lazy(() => GroupUncheckedUpdateWithoutMatchesInputSchema) ]),
+}).strict();
+
+export const GroupUpdateWithoutMatchesInputSchema: z.ZodType<Prisma.GroupUpdateWithoutMatchesInput> = z.object({
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutGroupsNestedInputSchema).optional(),
+  teams: z.lazy(() => TeamUpdateManyWithoutGroupNestedInputSchema).optional()
+}).strict();
+
+export const GroupUncheckedUpdateWithoutMatchesInputSchema: z.ZodType<Prisma.GroupUncheckedUpdateWithoutMatchesInput> = z.object({
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  teams: z.lazy(() => TeamUncheckedUpdateManyWithoutGroupNestedInputSchema).optional()
+}).strict();
+
 export const TeamCreateManyTournamentInputSchema: z.ZodType<Prisma.TeamCreateManyTournamentInput> = z.object({
   id: z.string().optional(),
   name: z.string(),
@@ -3303,8 +3513,9 @@ export const MatchCreateManyTournamentInputSchema: z.ZodType<Prisma.MatchCreateM
   team2Id: z.string(),
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const GroupCreateManyTournamentInputSchema: z.ZodType<Prisma.GroupCreateManyTournamentInput> = z.object({
@@ -3350,12 +3561,13 @@ export const TeamUncheckedUpdateManyWithoutTournamentInputSchema: z.ZodType<Pris
 export const MatchUpdateWithoutTournamentInputSchema: z.ZodType<Prisma.MatchUpdateWithoutTournamentInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   team1: z.lazy(() => TeamUpdateOneRequiredWithoutTeam1MatchesNestedInputSchema).optional(),
   team2: z.lazy(() => TeamUpdateOneRequiredWithoutTeam2MatchesNestedInputSchema).optional(),
   winner: z.lazy(() => TeamUpdateOneWithoutWinnerMatchesNestedInputSchema).optional(),
-  looser: z.lazy(() => TeamUpdateOneWithoutLooserMatchesNestedInputSchema).optional()
+  looser: z.lazy(() => TeamUpdateOneWithoutLooserMatchesNestedInputSchema).optional(),
+  group: z.lazy(() => GroupUpdateOneWithoutMatchesNestedInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedUpdateWithoutTournamentInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateWithoutTournamentInput> = z.object({
@@ -3365,8 +3577,9 @@ export const MatchUncheckedUpdateWithoutTournamentInputSchema: z.ZodType<Prisma.
   team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUncheckedUpdateManyWithoutTournamentInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyWithoutTournamentInput> = z.object({
@@ -3376,20 +3589,23 @@ export const MatchUncheckedUpdateManyWithoutTournamentInputSchema: z.ZodType<Pri
   team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const GroupUpdateWithoutTournamentInputSchema: z.ZodType<Prisma.GroupUpdateWithoutTournamentInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  teams: z.lazy(() => TeamUpdateManyWithoutGroupNestedInputSchema).optional()
+  teams: z.lazy(() => TeamUpdateManyWithoutGroupNestedInputSchema).optional(),
+  matches: z.lazy(() => MatchUpdateManyWithoutGroupNestedInputSchema).optional()
 }).strict();
 
 export const GroupUncheckedUpdateWithoutTournamentInputSchema: z.ZodType<Prisma.GroupUncheckedUpdateWithoutTournamentInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  teams: z.lazy(() => TeamUncheckedUpdateManyWithoutGroupNestedInputSchema).optional()
+  teams: z.lazy(() => TeamUncheckedUpdateManyWithoutGroupNestedInputSchema).optional(),
+  matches: z.lazy(() => MatchUncheckedUpdateManyWithoutGroupNestedInputSchema).optional()
 }).strict();
 
 export const GroupUncheckedUpdateManyWithoutTournamentInputSchema: z.ZodType<Prisma.GroupUncheckedUpdateManyWithoutTournamentInput> = z.object({
@@ -3412,8 +3628,9 @@ export const MatchCreateManyTeam1InputSchema: z.ZodType<Prisma.MatchCreateManyTe
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateManyTeam2InputSchema: z.ZodType<Prisma.MatchCreateManyTeam2Input> = z.object({
@@ -3424,8 +3641,9 @@ export const MatchCreateManyTeam2InputSchema: z.ZodType<Prisma.MatchCreateManyTe
   winnerId: z.string().optional().nullable(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateManyWinnerInputSchema: z.ZodType<Prisma.MatchCreateManyWinnerInput> = z.object({
@@ -3436,8 +3654,9 @@ export const MatchCreateManyWinnerInputSchema: z.ZodType<Prisma.MatchCreateManyW
   team2Id: z.string(),
   looserId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const MatchCreateManyLooserInputSchema: z.ZodType<Prisma.MatchCreateManyLooserInput> = z.object({
@@ -3448,8 +3667,9 @@ export const MatchCreateManyLooserInputSchema: z.ZodType<Prisma.MatchCreateManyL
   team2Id: z.string(),
   winnerId: z.string().optional().nullable(),
   tournamentId: z.string(),
-  team1Score: z.number().int(),
-  team2Score: z.number().int()
+  groupId: z.string().optional().nullable(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const PlayerUpdateWithoutTeamInputSchema: z.ZodType<Prisma.PlayerUpdateWithoutTeamInput> = z.object({
@@ -3473,12 +3693,13 @@ export const PlayerUncheckedUpdateManyWithoutTeamInputSchema: z.ZodType<Prisma.P
 export const MatchUpdateWithoutTeam1InputSchema: z.ZodType<Prisma.MatchUpdateWithoutTeam1Input> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   team2: z.lazy(() => TeamUpdateOneRequiredWithoutTeam2MatchesNestedInputSchema).optional(),
   winner: z.lazy(() => TeamUpdateOneWithoutWinnerMatchesNestedInputSchema).optional(),
   looser: z.lazy(() => TeamUpdateOneWithoutLooserMatchesNestedInputSchema).optional(),
-  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional()
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional(),
+  group: z.lazy(() => GroupUpdateOneWithoutMatchesNestedInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedUpdateWithoutTeam1InputSchema: z.ZodType<Prisma.MatchUncheckedUpdateWithoutTeam1Input> = z.object({
@@ -3488,8 +3709,9 @@ export const MatchUncheckedUpdateWithoutTeam1InputSchema: z.ZodType<Prisma.Match
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUncheckedUpdateManyWithoutTeam1InputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyWithoutTeam1Input> = z.object({
@@ -3499,19 +3721,21 @@ export const MatchUncheckedUpdateManyWithoutTeam1InputSchema: z.ZodType<Prisma.M
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUpdateWithoutTeam2InputSchema: z.ZodType<Prisma.MatchUpdateWithoutTeam2Input> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   team1: z.lazy(() => TeamUpdateOneRequiredWithoutTeam1MatchesNestedInputSchema).optional(),
   winner: z.lazy(() => TeamUpdateOneWithoutWinnerMatchesNestedInputSchema).optional(),
   looser: z.lazy(() => TeamUpdateOneWithoutLooserMatchesNestedInputSchema).optional(),
-  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional()
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional(),
+  group: z.lazy(() => GroupUpdateOneWithoutMatchesNestedInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedUpdateWithoutTeam2InputSchema: z.ZodType<Prisma.MatchUncheckedUpdateWithoutTeam2Input> = z.object({
@@ -3521,8 +3745,9 @@ export const MatchUncheckedUpdateWithoutTeam2InputSchema: z.ZodType<Prisma.Match
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUncheckedUpdateManyWithoutTeam2InputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyWithoutTeam2Input> = z.object({
@@ -3532,19 +3757,21 @@ export const MatchUncheckedUpdateManyWithoutTeam2InputSchema: z.ZodType<Prisma.M
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUpdateWithoutWinnerInputSchema: z.ZodType<Prisma.MatchUpdateWithoutWinnerInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   team1: z.lazy(() => TeamUpdateOneRequiredWithoutTeam1MatchesNestedInputSchema).optional(),
   team2: z.lazy(() => TeamUpdateOneRequiredWithoutTeam2MatchesNestedInputSchema).optional(),
   looser: z.lazy(() => TeamUpdateOneWithoutLooserMatchesNestedInputSchema).optional(),
-  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional()
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional(),
+  group: z.lazy(() => GroupUpdateOneWithoutMatchesNestedInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedUpdateWithoutWinnerInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateWithoutWinnerInput> = z.object({
@@ -3554,8 +3781,9 @@ export const MatchUncheckedUpdateWithoutWinnerInputSchema: z.ZodType<Prisma.Matc
   team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUncheckedUpdateManyWithoutWinnerInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyWithoutWinnerInput> = z.object({
@@ -3565,19 +3793,21 @@ export const MatchUncheckedUpdateManyWithoutWinnerInputSchema: z.ZodType<Prisma.
   team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUpdateWithoutLooserInputSchema: z.ZodType<Prisma.MatchUpdateWithoutLooserInput> = z.object({
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   team1: z.lazy(() => TeamUpdateOneRequiredWithoutTeam1MatchesNestedInputSchema).optional(),
   team2: z.lazy(() => TeamUpdateOneRequiredWithoutTeam2MatchesNestedInputSchema).optional(),
   winner: z.lazy(() => TeamUpdateOneWithoutWinnerMatchesNestedInputSchema).optional(),
-  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional()
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional(),
+  group: z.lazy(() => GroupUpdateOneWithoutMatchesNestedInputSchema).optional()
 }).strict();
 
 export const MatchUncheckedUpdateWithoutLooserInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateWithoutLooserInput> = z.object({
@@ -3587,8 +3817,9 @@ export const MatchUncheckedUpdateWithoutLooserInputSchema: z.ZodType<Prisma.Matc
   team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const MatchUncheckedUpdateManyWithoutLooserInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyWithoutLooserInput> = z.object({
@@ -3598,8 +3829,9 @@ export const MatchUncheckedUpdateManyWithoutLooserInputSchema: z.ZodType<Prisma.
   team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  team1Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team2Score: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  groupId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const TeamCreateManyGroupInputSchema: z.ZodType<Prisma.TeamCreateManyGroupInput> = z.object({
@@ -3609,6 +3841,19 @@ export const TeamCreateManyGroupInputSchema: z.ZodType<Prisma.TeamCreateManyGrou
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
   tournamentId: z.string()
+}).strict();
+
+export const MatchCreateManyGroupInputSchema: z.ZodType<Prisma.MatchCreateManyGroupInput> = z.object({
+  id: z.string().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  team1Id: z.string(),
+  team2Id: z.string(),
+  winnerId: z.string().optional().nullable(),
+  looserId: z.string().optional().nullable(),
+  tournamentId: z.string(),
+  team1Score: z.number().int().optional().nullable(),
+  team2Score: z.number().int().optional().nullable()
 }).strict();
 
 export const TeamUpdateWithoutGroupInputSchema: z.ZodType<Prisma.TeamUpdateWithoutGroupInput> = z.object({
@@ -3643,6 +3888,42 @@ export const TeamUncheckedUpdateManyWithoutGroupInputSchema: z.ZodType<Prisma.Te
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const MatchUpdateWithoutGroupInputSchema: z.ZodType<Prisma.MatchUpdateWithoutGroupInput> = z.object({
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team1: z.lazy(() => TeamUpdateOneRequiredWithoutTeam1MatchesNestedInputSchema).optional(),
+  team2: z.lazy(() => TeamUpdateOneRequiredWithoutTeam2MatchesNestedInputSchema).optional(),
+  winner: z.lazy(() => TeamUpdateOneWithoutWinnerMatchesNestedInputSchema).optional(),
+  looser: z.lazy(() => TeamUpdateOneWithoutLooserMatchesNestedInputSchema).optional(),
+  tournament: z.lazy(() => TournamentUpdateOneRequiredWithoutMatchesNestedInputSchema).optional()
+}).strict();
+
+export const MatchUncheckedUpdateWithoutGroupInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateWithoutGroupInput> = z.object({
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+}).strict();
+
+export const MatchUncheckedUpdateManyWithoutGroupInputSchema: z.ZodType<Prisma.MatchUncheckedUpdateManyWithoutGroupInput> = z.object({
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  team2Id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  winnerId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  looserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  tournamentId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  team1Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  team2Score: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 /////////////////////////////////////////
