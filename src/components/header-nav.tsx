@@ -41,6 +41,10 @@ const itemsLoggedIn: HeaderType[] = [
     route: "/tournament",
   },
   {
+    title: "Match",
+    route: "/tournament/match",
+  },
+  {
     title: "Gruppe",
     route: "/tournament/group",
   },

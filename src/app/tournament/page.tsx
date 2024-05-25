@@ -160,11 +160,15 @@ function TournamentIngameView({ data, jwt }: { data: TournamentData, jwt: TeamPa
             <TableBody>
               {group.teams.map((team) => {
                 const firstScore =
-                  (team.team1Matches ? team.team1Matches.reduce((sum, match) => sum + match.team1Score, 0): 0) +
-                  (team.team2Matches ? team.team2Matches.reduce((sum, match) => sum + match.team2Score, 0): 0);
+                // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team1Matches ? data.teams.find((t) => t.id === team.id).team1Matches.reduce((sum, match) => sum + match.team1Score, 0): 0) +
+                  // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team2Matches ? data.teams.find((t) => t.id === team.id).team2Matches.reduce((sum, match) => sum + match.team2Score, 0): 0);
                 const secondScore =
-                  (team.team1Matches ? team.team1Matches.reduce((sum, match) => sum + match.team2Score, 0): 0) +
-                  (team.team2Matches ? team.team2Matches.reduce((sum, match) => sum + match.team1Score, 0): 0);
+                // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team1Matches ? data.teams.find((t) => t.id === team.id).team1Matches.reduce((sum, match) => sum + match.team2Score, 0): 0) +
+                  // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team2Matches ? data.teams.find((t) => t.id === team.id).team2Matches.reduce((sum, match) => sum + match.team1Score, 0): 0);
                 return (
                   <TableRow
                     key={team.id}
@@ -174,8 +178,15 @@ function TournamentIngameView({ data, jwt }: { data: TournamentData, jwt: TeamPa
                   >
                     <TableCell className="font-medium">{team.name}</TableCell>
                     <TableCell>
-                      {team.winnerMatches ? team.winnerMatches.length : 0}:
-                      {team.looserMatches ? team.looserMatches.length : 0}
+                      {
+                        data.teams.find((t) => t.id === team.id)
+                          ?.winnerMatches.length
+                      }
+                      :
+                      {
+                        data.teams.find((t) => t.id === team.id)
+                          ?.looserMatches.length
+                      }
                     </TableCell>
                     <TableCell>
                       {firstScore}:{secondScore}
@@ -200,125 +211,75 @@ function MatchesView({
   data: TournamentData;
   jwt: TeamPayload | null;
 }) {
-  const matchesByGroup = data.matches.reduce((groups, match) => {
-    const groupKey = match.group?.id; // Replace with the actual group ID property
-    if (!groups[groupKey]) {
-      groups[groupKey] = [];
-    }
-    groups[groupKey].push(match);
-    return groups;
-  }, {});
-
   return (
     <div>
       {data.groups.map((group, index) => (
         <section key={group.id} className="mt-10 border-t-4 pt-10">
           <h1 className="font-bold">Gruppe {index + 1}</h1>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {group.matches
-              .map((match, index) => (
-                <Table key={match.id} className="border-2">
-                  <TableCaption>Match {index + 1}</TableCaption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[100px]">Team</TableHead>
-                      <TableHead>S:N</TableHead>
-                      <TableHead>Becher</TableHead>
-                      {/* <TableHead className="text-right">Amount</TableHead> */}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell
-                        className={
-                          jwt!.payload.teamName === match.team1.name
-                            ? "bg-primary/30 font-medium"
-                            : "font-medium"
-                        }
-                      >
-                        {match.team1.name}
-                      </TableCell>
-                      <TableCell>
-                        {match.team1Score ? match.team1Score : 0}:
-                        {match.team2Score ? match.team2Score : 0}
-                      </TableCell>
-                      <TableCell>
-                        {match.team1Score + match.team2Score}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell
-                        className={
-                          jwt!.payload.teamName === match.team2.name
-                            ? "bg-primary/30 font-medium"
-                            : "font-medium"
-                        }
-                      >
-                        {match.team2.name}
-                      </TableCell>
-                      <TableCell>
-                        {match.team2Score ? match.team2Score : 0}:
-                        {match.team1Score ? match.team1Score : 0}
-                      </TableCell>
-                      <TableCell>
-                        {match.team1Score + match.team2Score}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              ))}
+            {group.matches.map((match, index) => (
+              <Table key={match.id} className="border-2">
+                <TableCaption>Match {index + 1}</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Team</TableHead>
+                    <TableHead>S:N</TableHead>
+                    <TableHead>Becher</TableHead>
+                    {/* <TableHead className="text-right">Amount</TableHead> */}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell
+                      className={
+                        jwt!.payload.teamName === match.team1.name
+                          ? "bg-primary/30 font-medium"
+                          : "font-medium"
+                      }
+                    >
+                      {match.team1.name}
+                    </TableCell>
+                    <TableCell>
+                      {
+                        data.teams.find((team) => team.id === match.team1.id)
+                          ?.winnerMatches.length
+                      }
+                      :
+                      {
+                        data.teams.find((team) => team.id === match.team1.id)
+                          ?.looserMatches.length
+                      }
+                    </TableCell>
+                    <TableCell>{match.team1Score}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell
+                      className={
+                        jwt!.payload.teamName === match.team2.name
+                          ? "bg-primary/30 font-medium"
+                          : "font-medium"
+                      }
+                    >
+                      {match.team2.name}
+                    </TableCell>
+                    <TableCell>
+                      {
+                        data.teams.find((team) => team.id === match.team2.id)
+                          ?.winnerMatches.length
+                      }
+                      :
+                      {
+                        data.teams.find((team) => team.id === match.team2.id)
+                          ?.looserMatches.length
+                      }
+                    </TableCell>
+                    <TableCell>{match.team2Score}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            ))}
           </div>
         </section>
-      ))}
-    </div>
-  );
-
-  return (
-    <div className="mt-10 grid grid-cols-2 gap-4 border-t-4 pt-10 md:grid-cols-4">
-      {data.matches.map((match, index) => (
-        <Table key={match.id} className="border-2">
-          <TableCaption>Match {index + 1}</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">Team</TableHead>
-              <TableHead>S:N</TableHead>
-              <TableHead>Becher</TableHead>
-              {/* <TableHead className="text-right">Amount</TableHead> */}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell
-                className={
-                  jwt!.payload.teamName === match.team1.name
-                    ? "bg-primary/30 font-medium"
-                    : "font-medium"
-                }
-              >
-                {match.team1.name}
-              </TableCell>
-              <TableCell>
-                {match.team1Score ? match.team1Score : 0}:{match.team2Score ? match.team2Score : 0}
-              </TableCell>
-              <TableCell>{match.team1Score + match.team2Score}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell
-                className={
-                  jwt!.payload.teamName === match.team2.name
-                    ? "bg-primary/30 font-medium"
-                    : "font-medium"
-                }
-              >
-                {match.team2.name}
-              </TableCell>
-              <TableCell>
-                {match.team2Score ? match.team2Score : 0}:{match.team1Score ? match.team1Score : 0}
-              </TableCell>
-              <TableCell>{match.team1Score + match.team2Score}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
       ))}
     </div>
   );

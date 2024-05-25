@@ -19,7 +19,7 @@ export const matchRouter = createTRPCRouter({
           tournament: { connect: { id: input.tournamentId } },
           team1: { connect: { id: input.team1Id } },
           team2: { connect: { id: input.team2Id } },
-          group: { connect: { id: input.groupId } }
+          group: { connect: { id: input.groupId } },
         },
       });
     }),
@@ -30,6 +30,24 @@ export const matchRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       return ctx.db.match.findFirst({
         where: { id: input.id },
+      });
+    }),
+
+  // Get all Matches by Tournamen ID
+  getAllByTournament: publicProcedure
+    .input(z.object({ tournamentId: z.string().min(1) }))
+    .query(({ ctx, input }) => {
+      return ctx.db.match.findMany({
+        where: { tournamentId: input.tournamentId },
+      });
+    }),
+
+  // Get all Matches by Groupo ID
+  getAllByGroup: publicProcedure
+    .input(z.object({ groupId: z.string().min(1) }))
+    .query(({ ctx, input }) => {
+      return ctx.db.match.findMany({
+        where: { groupId: input.groupId },
       });
     }),
 
@@ -54,14 +72,26 @@ export const matchRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = {
+        team1Score: input.team1Score,
+        team2Score: input.team2Score,
+      };
+
+      if (input.winnerId) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        data.winner = { connect: { id: input.winnerId } };
+      }
+
+      if (input.looserId) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        data.looser = { connect: { id: input.looserId } };
+      }
+
       return ctx.db.match.update({
         where: { id: input.id },
-        data: {
-          winner: { connect: { id: input.winnerId } },
-          looser: { connect: { id: input.looserId } },
-          team1Score: input.team1Score,
-          team2Score: input.team2Score,
-        },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        data,
       });
     }),
 });

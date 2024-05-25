@@ -8,6 +8,18 @@ const now = new Date();
 const nbf = now;
 const exp = nbf.getTime() + 24 * 60 * 60 * 1000; // ms precision
 
+export type Session = {
+  payload: {
+    teamId: string;
+    teamName: string;
+    tournamentId: string;
+    code: string;
+  };
+  expires: number;
+  iat: number;
+  exp: number;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function encrypt(payload: any) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -19,11 +31,11 @@ export async function encrypt(payload: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function decrypt(input: string): Promise<any> {
+export async function decrypt(input: string): Promise<Session> {
   const { payload } = await jwtVerify(input, key, {
     algorithms: ["HS256"],
   });
-  return payload;
+  return payload as Session;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
