@@ -21,6 +21,7 @@ function isErrorResponseTie(data: any): data is ErrorResponseTie {
 
 export function StartTournament() {
   const [started, setStarted] = useState<boolean>(false);
+  const [createMatches, setCreateMatches] = useState<boolean>(false);
 
   const start = async () => {
     await fetch("/api/tournament/start", {
@@ -30,7 +31,10 @@ export function StartTournament() {
       },
     })
       .then(() => {
-        setStarted(true);
+        if (!createMatches) {
+          setStarted(true);
+          setCreateMatches(true);
+        } else setStarted(true);
       })
       .catch((err) => {
         setStarted(false);
@@ -39,9 +43,14 @@ export function StartTournament() {
   };
 
   return (
-    <Button onClick={start} disabled={started}>
-      {started ? "Wurde gestartet" : "Turnier starten"}
-    </Button>
+    <div>
+      <Button onClick={start} disabled={started}>
+        {started ? "Wurde gestartet" : "Turnier starten"}
+      </Button>
+      <Button onClick={start} disabled={!createMatches}>
+        Matches erstellen
+      </Button>
+    </div>
   );
 }
 

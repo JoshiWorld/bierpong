@@ -188,7 +188,7 @@ export async function POST() {
         tournamentId: id,
         team1Id: team.id,
         // @ts-expect-error || @ts-ignore
-        team2Id: secondTeams[randomIndex],
+        team2Id: secondTeams[randomIndex].id,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         matchtype: matchtype,
       }).then(() => secondTeams.splice(randomIndex, 1));
