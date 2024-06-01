@@ -83,26 +83,34 @@ export default function TournamentPage() {
 
   useEffect(() => {
     if (jwt) {
-      const eventSource = new EventSource(
-        // "http://localhost:3000/subscribe/" + jwt.payload.tournamentId,
-        "https://observer.bierpong.brokoly.de/subscribe/" +
-          jwt.payload.tournamentId,
-      );
+      // const eventSource = new EventSource(
+      //   // "http://localhost:3000/subscribe/" + jwt.payload.tournamentId,
+      //   "https://observer.bierpong.brokoly.de/subscribe/" +
+      //     jwt.payload.tournamentId,
+      // );
 
-      eventSource.onmessage = (event) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const data = JSON.parse(event.data) as TournamentData;
+      // eventSource.onmessage = (event) => {
+      //   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      //   const data = JSON.parse(event.data) as TournamentData;
+      //   setData(data);
+      // };
+
+      // eventSource.onerror = (error) => {
+      //   console.error("EventSource error:", error);
+      //   eventSource.close();
+      // };
+
+      // return () => {
+      //   eventSource.close();
+      // };
+      fetch("/api/tournament/", {
+        method: "GET",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      }).then(async (res) => {
+        const data = await res.json() as TournamentData;
+        console.log(data);
         setData(data);
-      };
-
-      eventSource.onerror = (error) => {
-        console.error("EventSource error:", error);
-        eventSource.close();
-      };
-
-      return () => {
-        eventSource.close();
-      };
+      }).catch((err) => console.error(err));
     }
   }, [jwt]);
 

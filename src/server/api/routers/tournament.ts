@@ -51,7 +51,6 @@ export const tournamentRouter = createTRPCRouter({
               team2Matches: true,
               winnerMatches: true,
               looserMatches: true,
-              group: true,
             },
           },
           matches: {
@@ -60,13 +59,19 @@ export const tournamentRouter = createTRPCRouter({
               team2: true,
               winner: true,
               looser: true,
-              group: true,
             },
           },
           groups: {
             include: {
               teams: true,
-              matches: true,
+              matches: {
+                include: {
+                  team1: true,
+                  team2: true,
+                  winner: true,
+                  looser: true,
+                },
+              },
             },
           },
         },
