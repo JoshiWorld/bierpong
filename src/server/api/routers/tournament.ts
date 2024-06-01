@@ -4,9 +4,7 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TournamentSizeSchema } from "prisma/generated/zod";
 import { TournamentState } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { encrypt, loginAdmin } from "../jwt";
-import cookie from "cookie";
-import { cookies } from "next/headers";
+import { encrypt } from "../jwt";
 
 export const tournamentRouter = createTRPCRouter({
   // Creates a new Tournament

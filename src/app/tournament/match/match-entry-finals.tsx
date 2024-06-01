@@ -26,7 +26,7 @@ export function MatchEntryFinals({match, teamId}: {match: Match, teamId: string}
   const updateMatch = api.match.update.useMutation({
     onSuccess: (res) => {
       if(res.winnerId && res.looserId) {
-        const createMatch = api.match.create.useMutation();
+        // const createMatch = api.match.create.useMutation();
       }
       router.push("/tournament");
       toast({

@@ -1,17 +1,6 @@
 import { getAdminSession } from "@/server/api/jwt";
 import { api } from "@/trpc/server";
-import { type TournamentState, type Team, MatchType, TournamentSize } from "@prisma/client";
-
-type TournamentData = {
-  id: string;
-  name: string;
-  code: string;
-  tournamentSize: TournamentSize;
-  tournamentState: TournamentState;
-  teams: TeamData[];
-  matches: MatchData[];
-  groups: GroupData[];
-};
+import { type Team, MatchType, TournamentSize } from "@prisma/client";
 
 type TeamData = {
   id: string;
@@ -44,15 +33,6 @@ type MatchData = {
   team1Score: number;
   team2Score: number;
   group?: GroupData;
-};
-
-type TeamPayload = {
-  payload: {
-    teamId: string;
-    teamName: string;
-    tournamentId: string;
-    code: string;
-  };
 };
 
 type Tiebreaker = {
@@ -139,7 +119,7 @@ export async function POST() {
           );
         const goalRatioTeam2 = goalSelfTeam2 - goalEnemyTeam2;
 
-        if(team.id !== firstTeam!.id && team.id !== secondTeam!.id) {
+        if (team.id !== firstTeam!.id && team.id !== secondTeam!.id) {
           if (wins > winsTeam1) {
             firstTeam = team;
           } else if (wins === winsTeam1 && goalRatio > goalRatioTeam1) {

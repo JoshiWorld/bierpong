@@ -19,16 +19,6 @@ import { api } from "@/trpc/react";
 import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 
-export default function LoginPage() {
-  return (
-    <div className="relative flex h-[50rem] w-full  items-center justify-center bg-white bg-dot-black/[0.2] dark:bg-background dark:bg-dot-white/[0.2]">
-      {/* Radial gradient for the container to give a faded look */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] dark:bg-background"></div>
-      <LoginAdmin />
-    </div>
-  );
-}
-
 const FormSchema = z.object({
   code: z.string().min(4, {
     message: "Der Code muss mindestens 4 Zeichen besitzen.",
@@ -36,8 +26,8 @@ const FormSchema = z.object({
   password: z.string(),
 });
 
-export function LoginAdmin() {
-    const router = useRouter();
+function LoginAdmin() {
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -53,7 +43,7 @@ export function LoginAdmin() {
         //      sek  min  std
         maxAge: 60 * 60 * 24,
       });
-      
+
       router.push("/admin");
       toast({
         title: "Du bist jetzt als Admin eingeloggt.",
@@ -95,8 +85,19 @@ export function LoginAdmin() {
           )}
         />
 
-        <Button type="submit" disabled={login.isPending}>{login.isPending ? "Wird eingeloggt..." : "Einloggen"}</Button>
+        <Button type="submit" disabled={login.isPending}>
+          {login.isPending ? "Wird eingeloggt..." : "Einloggen"}
+        </Button>
       </form>
     </Form>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div className="relative flex h-[50rem] w-full  items-center justify-center bg-white bg-dot-black/[0.2] dark:bg-background dark:bg-dot-white/[0.2]">
+      {/* <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] dark:bg-background"></div> */}
+      <LoginAdmin />
+    </div>
   );
 }

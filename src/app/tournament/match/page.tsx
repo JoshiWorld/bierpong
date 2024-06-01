@@ -33,11 +33,16 @@ async function GroupPhase({team, session}: {team: Team, session: Session}) {
   }
   const matches = await api.match.getAllByGroup({ groupId: group.id });
 
-  const currentMatch = matches.find((match) => !match.winnerId || !match.looserId);
+  const currentMatch = matches.find(
+    (match) => !match.winnerId || !match.looserId,
+  );
   if (!currentMatch) {
     return <h1>Kein Match gefunden</h1>;
   }
-  if(currentMatch?.team1Id !== session.payload.teamId && currentMatch?.team2Id !== session.payload.teamId) {
+  if (
+    currentMatch?.team1Id !== session.payload.teamId &&
+    currentMatch?.team2Id !== session.payload.teamId
+  ) {
     return <h1>Ein anderes Team spielt gerade noch.</h1>;
   }
 
@@ -45,6 +50,7 @@ async function GroupPhase({team, session}: {team: Team, session: Session}) {
     currentMatch.team1Id === session.payload.teamId
       ? currentMatch.team2Id
       : currentMatch.team1Id;
+  // @ts-expect-error || @ts-ignore
   const enemy = await api.team.get({ id: enemyId });
 
   return (
@@ -61,11 +67,13 @@ async function GroupPhase({team, session}: {team: Team, session: Session}) {
 
 async function FinalsPhase({ team, session }: { team: Team; session: Session }) {
   const matches = await api.match.getWithoutGroup();
-  if(!matches) return <h1>Kein Match gefunden</h1>;
+  if (!matches) return <h1>Kein Match gefunden</h1>;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const currentMatch = matches.find(
-    (match) => (!match.winnerId || !match.looserId) && match.team1Id === team.id || match.team2Id === team.id,
+    (match) =>
+      ((!match.winnerId || !match.looserId) && match.team1Id === team.id) ||
+      match.team2Id === team.id,
   );
   if (!currentMatch) {
     return <h1>Kein Match gefunden</h1>;
@@ -81,6 +89,7 @@ async function FinalsPhase({ team, session }: { team: Team; session: Session }) 
     currentMatch.team1Id === session.payload.teamId
       ? currentMatch.team2Id
       : currentMatch.team1Id;
+  // @ts-expect-error || @ts-ignore
   const enemy = await api.team.get({ id: enemyId });
 
   return (

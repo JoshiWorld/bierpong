@@ -311,18 +311,18 @@ function TournamentIngameFinalsView({
             <TableBody>
               {group.teams.map((team) => {
                 const firstScore =
-                  // @ts-expect-error || @ts-ignore
                   (data.teams.find((t) => t.id === team.id)?.team1Matches
-                    ? data.teams
+                    ? // @ts-expect-error || @ts-ignore
+                      data.teams
                         .find((t) => t.id === team.id)
                         .team1Matches.reduce(
                           (sum, match) => sum + match.team1Score,
                           0,
                         )
                     : 0) +
-                  // @ts-expect-error || @ts-ignore
                   (data.teams.find((t) => t.id === team.id)?.team2Matches
-                    ? data.teams
+                    ? // @ts-expect-error || @ts-ignore
+                      data.teams
                         .find((t) => t.id === team.id)
                         .team2Matches.reduce(
                           (sum, match) => sum + match.team2Score,
@@ -330,18 +330,18 @@ function TournamentIngameFinalsView({
                         )
                     : 0);
                 const secondScore =
-                  // @ts-expect-error || @ts-ignore
                   (data.teams.find((t) => t.id === team.id)?.team1Matches
-                    ? data.teams
+                    ? // @ts-expect-error || @ts-ignore
+                      data.teams
                         .find((t) => t.id === team.id)
                         .team1Matches.reduce(
                           (sum, match) => sum + match.team2Score,
                           0,
                         )
                     : 0) +
-                  // @ts-expect-error || @ts-ignore
                   (data.teams.find((t) => t.id === team.id)?.team2Matches
-                    ? data.teams
+                    ? // @ts-expect-error || @ts-ignore
+                      data.teams
                         .find((t) => t.id === team.id)
                         .team2Matches.reduce(
                           (sum, match) => sum + match.team1Score,

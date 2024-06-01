@@ -22,8 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { TournamentSize } from "@prisma/client";
-import { TournamentSizeSchema } from "prisma/generated/zod";
 
 const FormSchema = z.object({
   name: z.string().min(2, {
@@ -35,7 +33,7 @@ const FormSchema = z.object({
   password: z.string().min(6, {
     message: "Das Passwort muss mindestens 6 Zeichen besitzen.",
   }),
-  tournamentSize: TournamentSizeSchema,
+  tournamentSize: z.string(),
 });
 
 export function CreateTournament() {
@@ -45,7 +43,7 @@ export function CreateTournament() {
       name: "",
       code: "",
       password: "",
-      tournamentSize: TournamentSize.BIG,
+      tournamentSize: "BIG",
     },
   });
 
