@@ -1,31 +1,33 @@
+import { getAdminSession } from "@/server/api/jwt";
 import { api } from "@/trpc/server";
 import { type Team } from "@prisma/client";
 
-type TournamentStartData = {
-    tournamentId: string;
-    password: string;
-};
+// type TournamentStartData = {
+//     tournamentId: string;
+//     password: string;
+// };
 
-export async function POST(req: Request) {
-    const tournamentData = (await req.json()) as TournamentStartData;
+export async function POST() {
+    // const tournamentData = (await req.json()) as TournamentStartData;
+    const tournamentData = await getAdminSession();
     if (!tournamentData)
       return Response.json({ error: "Data missing" }, { status: 400 });
 
     const updatedTournament = await api.tournament.start({
-        id: tournamentData.tournamentId,
-        password: tournamentData.password,
+        id: tournamentData.payload.tournamentId,
+        password: tournamentData.payload.password,
     });
     if(!updatedTournament)
         return Response.json({ error: "Could not start tournament" }, { status: 400 });
 
     const teams = await api.tournament.getTeams({
-        id: tournamentData.tournamentId,
+      id: tournamentData.payload.tournamentId,
     });
     if(!teams)
         return Response.json({ error: "Could not get teams" }, { status: 400 });
 
     const groups = await api.tournament.getGroups({
-      id: tournamentData.tournamentId,
+      id: tournamentData.payload.tournamentId,
     });
 
     if(!groups || groups.length === 0) {
@@ -42,7 +44,7 @@ export async function POST(req: Request) {
         }
 
         await api.group.create({
-          tournamentId: tournamentData.tournamentId,
+          tournamentId: tournamentData.payload.tournamentId,
           teams: group,
         });
       }

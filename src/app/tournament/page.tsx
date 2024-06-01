@@ -1,6 +1,6 @@
 "use client";
 
-import { TournamentState, type TournamentSize } from "@prisma/client";
+import { MatchType, TournamentSize, TournamentState } from "@prisma/client";
 // components/SubscriptionComponent.tsx
 import { useEffect, useState } from "react";
 import {
@@ -55,6 +55,7 @@ type MatchData = {
   team1Score: number;
   team2Score: number;
   group?: GroupData;
+  matchtype: MatchType;
 };
 
 type TeamPayload = {
@@ -106,8 +107,9 @@ export default function TournamentPage() {
   if (!data) return <div>Loading...</div>;
 
   if(data.tournamentState === TournamentState.LOBBY) return <TournamentLobbyView data={data} />;
+  if(data.tournamentState === TournamentState.GROUP) return <TournamentIngameView data={data} jwt={jwt} />;
 
-  return <TournamentIngameView data={data} jwt={jwt} />;
+  return <TournamentIngameFinalsView data={data} jwt={jwt} />;
 }
 
 function TournamentLobbyView({ data }: { data: TournamentData }) {
@@ -218,6 +220,223 @@ function MatchesView({
           <h1 className="font-bold">Gruppe {index + 1}</h1>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
             {group.matches.map((match, index) => (
+              <Table key={match.id} className="border-2">
+                <TableCaption>Match {index + 1}</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Team</TableHead>
+                    <TableHead>S:N</TableHead>
+                    <TableHead>Becher</TableHead>
+                    {/* <TableHead className="text-right">Amount</TableHead> */}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell
+                      className={
+                        jwt!.payload.teamName === match.team1.name
+                          ? "bg-primary/30 font-medium"
+                          : "font-medium"
+                      }
+                    >
+                      {match.team1.name}
+                    </TableCell>
+                    <TableCell>
+                      {
+                        data.teams.find((team) => team.id === match.team1.id)
+                          ?.winnerMatches.length
+                      }
+                      :
+                      {
+                        data.teams.find((team) => team.id === match.team1.id)
+                          ?.looserMatches.length
+                      }
+                    </TableCell>
+                    <TableCell>{match.team1Score}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell
+                      className={
+                        jwt!.payload.teamName === match.team2.name
+                          ? "bg-primary/30 font-medium"
+                          : "font-medium"
+                      }
+                    >
+                      {match.team2.name}
+                    </TableCell>
+                    <TableCell>
+                      {
+                        data.teams.find((team) => team.id === match.team2.id)
+                          ?.winnerMatches.length
+                      }
+                      :
+                      {
+                        data.teams.find((team) => team.id === match.team2.id)
+                          ?.looserMatches.length
+                      }
+                    </TableCell>
+                    <TableCell>{match.team2Score}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function TournamentIngameFinalsView({
+  data,
+  jwt,
+}: {
+  data: TournamentData;
+  jwt: TeamPayload | null;
+}) {
+  return (
+    <div className="container justify-center">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {data.groups.map((group, index) => (
+          <Table key={group.id} className="border-2">
+            <TableCaption>Gruppe {index + 1}</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Team</TableHead>
+                <TableHead>S:N</TableHead>
+                <TableHead>Becher</TableHead>
+                {/* <TableHead className="text-right">Amount</TableHead> */}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {group.teams.map((team) => {
+                const firstScore =
+                  // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team1Matches
+                    ? data.teams
+                        .find((t) => t.id === team.id)
+                        .team1Matches.reduce(
+                          (sum, match) => sum + match.team1Score,
+                          0,
+                        )
+                    : 0) +
+                  // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team2Matches
+                    ? data.teams
+                        .find((t) => t.id === team.id)
+                        .team2Matches.reduce(
+                          (sum, match) => sum + match.team2Score,
+                          0,
+                        )
+                    : 0);
+                const secondScore =
+                  // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team1Matches
+                    ? data.teams
+                        .find((t) => t.id === team.id)
+                        .team1Matches.reduce(
+                          (sum, match) => sum + match.team2Score,
+                          0,
+                        )
+                    : 0) +
+                  // @ts-expect-error || @ts-ignore
+                  (data.teams.find((t) => t.id === team.id)?.team2Matches
+                    ? data.teams
+                        .find((t) => t.id === team.id)
+                        .team2Matches.reduce(
+                          (sum, match) => sum + match.team1Score,
+                          0,
+                        )
+                    : 0);
+                return (
+                  <TableRow
+                    key={team.id}
+                    className={
+                      jwt!.payload.teamName === team.name ? "bg-primary/30" : ""
+                    }
+                  >
+                    <TableCell className="font-medium">{team.name}</TableCell>
+                    <TableCell>
+                      {
+                        data.teams.find((t) => t.id === team.id)?.winnerMatches
+                          .length
+                      }
+                      :
+                      {
+                        data.teams.find((t) => t.id === team.id)?.looserMatches
+                          .length
+                      }
+                    </TableCell>
+                    <TableCell>
+                      {firstScore}:{secondScore}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        ))}
+      </div>
+
+      <MatchesFinalsView data={data} jwt={jwt} />
+    </div>
+  );
+}
+
+function MatchesFinalsView({
+  data,
+  jwt,
+}: {
+  data: TournamentData;
+  jwt: TeamPayload | null;
+}) {
+  type SectionType = {
+    type: MatchType;
+    title: string;
+  };
+  const sections: SectionType[] = [];
+
+  if(sections.length === 0) {
+    switch (data.tournamentSize) {
+      case TournamentSize.BIG:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.EIGHT, title: "Achtelfinale" });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.FOURTH, title: "Viertelfinale" });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.HALF, title: "Halbfinale" });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.FINAL, title: "Finale" });
+        break;
+      case TournamentSize.LARGE:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.FOURTH, title: "Viertelfinale" });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.HALF, title: "Halbfinale" });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.FINAL, title: "Finale" });
+        break;
+      case TournamentSize.MEDIUM:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.HALF, title: "Halbfinale" });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.FINAL, title: "Finale" });
+        break;
+      default:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        sections.push({ type: MatchType.FINAL, title: "Finale" });
+        break;
+    }
+  }
+
+
+  return (
+    <div>
+      {sections.map((section, index) => (
+        <section key={index} className="mt-10 border-t-4 pt-10">
+          <h1 className="font-bold">{section.title}</h1>
+          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+            {data.matches.map((match, index) => (
               <Table key={match.id} className="border-2">
                 <TableCaption>Match {index + 1}</TableCaption>
                 <TableHeader>

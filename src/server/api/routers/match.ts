@@ -8,20 +8,38 @@ export const matchRouter = createTRPCRouter({
     .input(
       z.object({
         tournamentId: z.string().min(1),
-        team1Id: z.string().min(1),
-        team2Id: z.string().min(1),
+        team1Id: z.string().min(1).optional(),
+        team2Id: z.string().min(1).optional(),
         groupId: z.string().optional(),
+        matchtype: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.match.create({
-        data: {
-          tournament: { connect: { id: input.tournamentId } },
-          team1: { connect: { id: input.team1Id } },
-          team2: { connect: { id: input.team2Id } },
-          group: { connect: { id: input.groupId } },
-        },
-      });
+      const data = {
+        tournament: { connect: { id: input.tournamentId } },
+      };
+
+      if (input.team1Id) {
+        // @ts-expect-error || @ts-ignore
+        data.team1 = { connect: { id: input.team1Id } };
+      }
+
+      if (input.team2Id) {
+        // @ts-expect-error || @ts-ignore
+        data.team2 = { connect: { id: input.team2Id } };
+      }
+
+      if (input.groupId) {
+        // @ts-expect-error || @ts-ignore
+        data.group = { connect: { id: input.groupId } };
+      }
+
+      if(input.matchtype) {
+        // @ts-expect-error || @ts-ignore
+        data.matchtype = input.matchtype;
+      }
+
+      return ctx.db.match.create({ data });
     }),
 
   // Get a Match by ID
@@ -32,6 +50,13 @@ export const matchRouter = createTRPCRouter({
         where: { id: input.id },
       });
     }),
+
+  // Gets matches without group id
+  getWithoutGroup: publicProcedure.query(({ ctx }) => {
+    return ctx.db.match.findMany({
+      where: { groupId: null },
+    });
+  }),
 
   // Get all Matches by Tournamen ID
   getAllByTournament: publicProcedure

@@ -27,6 +27,8 @@
     "@trpc/server": "next",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cookie": "^0.6.0",
+    "cookies-next": "^4.2.1",
     "flowbite-react": "^0.9.0",
     "framer-motion": "^11.1.7",
     "jose": "^5.2.4",
@@ -48,6 +50,7 @@
     "zod-prisma-types": "^3.1.6"
   },
   "devDependencies": {
+    "@types/cookie": "^0.6.0",
     "@types/eslint": "^8.56.2",
     "@types/node": "^20.11.20",
     "@types/react": "^18.2.57",

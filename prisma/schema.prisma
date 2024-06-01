@@ -74,10 +74,10 @@ model Match {
     id           String     @id @default(auto()) @map("_id") @db.ObjectId
     createdAt    DateTime   @default(now())
     updatedAt    DateTime   @updatedAt
-    team1        Team       @relation(name: "Team1", fields: [team1Id], references: [id])
-    team1Id      String     @db.ObjectId
-    team2        Team       @relation(name: "Team2", fields: [team2Id], references: [id])
-    team2Id      String     @db.ObjectId
+    team1        Team?      @relation(name: "Team1", fields: [team1Id], references: [id])
+    team1Id      String?    @db.ObjectId
+    team2        Team?      @relation(name: "Team2", fields: [team2Id], references: [id])
+    team2Id      String?    @db.ObjectId
     winner       Team?      @relation(name: "Winner", fields: [winnerId], references: [id])
     winnerId     String?    @db.ObjectId
     looser       Team?      @relation(name: "Looser", fields: [looserId], references: [id])
@@ -88,6 +88,7 @@ model Match {
     groupId      String?    @db.ObjectId
     team1Score   Int?
     team2Score   Int?
+    matchtype    MatchType  @default(GROUP)
 }
 
 enum TournamentSize {
@@ -99,6 +100,16 @@ enum TournamentSize {
 
 enum TournamentState {
     LOBBY
-    RUNNING
+    GROUP
+    FINALS
     FINISHED
+}
+
+enum MatchType {
+    GROUP // Gruppenmatch
+    EIGHT // Achtelfinale
+    FOURTH // Viertelfinale
+    HALF // Halbfinale
+    FINAL // Finale
+    TIEBREAKER // Unentschieden
 }
