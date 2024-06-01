@@ -84,7 +84,9 @@ export default function TournamentPage() {
   useEffect(() => {
     if (jwt) {
       const eventSource = new EventSource(
-        "http://localhost:3000/subscribe/" + jwt.payload.tournamentId,
+        // "http://localhost:3000/subscribe/" + jwt.payload.tournamentId,
+        "https://observer.bierpong.brokoly.de/subscribe/" +
+          jwt.payload.tournamentId,
       );
 
       eventSource.onmessage = (event) => {
