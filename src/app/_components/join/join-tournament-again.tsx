@@ -38,7 +38,7 @@ export function ReJoinTournament() {
       },
       body: JSON.stringify(data),
     }).then((res) => {
-      if(!res.ok) {
+      if (!res.ok) {
         toast({
           title: "Fehler beim Beitreten zum Turnier",
           description: "Der Code ist ungültig.",
@@ -46,6 +46,9 @@ export function ReJoinTournament() {
         });
         return;
       }
+
+      // Reload the page and go to /tournament route
+      location.href = "/tournament";
 
       toast({
         title: "Du bist dem Turnier beigetreten",
